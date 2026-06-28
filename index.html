@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0F1714">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>Medidor — Calculadora de Conta de Luz</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root{
+  --bg: #0F1714;
+  --card: #161F1B;
+  --card-2: #1C2620;
+  --line: #2A352F;
+  --text: #EDEAE0;
+  --muted: #8B9A91;
+  --amber: #F5A623;
+  --amber-dim: #6b4f1c;
+  --hot: #FF6B4A;
+  --green-ok: #6FCF8E;
+}
+
+*{box-sizing:border-box;}
+html, body{
+  margin:0;
+  width: 100%;
+  overflow-x: hidden;
+}
+body{
+  background: radial-gradient(ellipse at top, #16201B 0%, var(--bg) 60%);
+  color: var(--text);
+  font-family: 'Manrope', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 100vh;
+}
+.wrap{
+  max-width: 460px;
+  margin: 0 auto;
+  padding: calc(20px + env(safe-area-inset-top)) 18px calc(40px + env(safe-area-inset-bottom));
+}
+
+/* HEADER / SIGNATURE DIAL */
+.header{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  margin-bottom: 22px;
+}
+.eyebrow{
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--amber);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+h1{
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0 0 14px;
+  text-align:center;
+  letter-spacing: -0.02em;
+}
+.dial-box{ position:relative; width: 150px; height: 150px; margin-bottom: 4px;}
+.bolt-icon{
+  font-size: 22px;
+  color: var(--amber);
+  filter: drop-shadow(0 0 8px rgba(245,166,35,0.55));
+  margin-bottom: 10px;
+  animation: bolt-pulse 2.2s ease-in-out infinite;
+}
+@keyframes bolt-pulse{
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.12); opacity: 0.85; }
+}
+
+/* CARDS */
+.card{
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+.card-title{
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin: 0 0 14px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.card-title .dot{ width:6px;height:6px;border-radius:50%; background:var(--amber); }
+
+label{
+  display:block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 6px;
+  font-weight:500;
+}
+.field{ margin-bottom: 12px; }
+input{
+  width:100%;
+  background: var(--card-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 13px 14px;
+  color: var(--text);
+  font-family:'Manrope', sans-serif;
+  font-size: 16px;
+  outline:none;
+  transition: border-color .15s;
+}
+input::placeholder{ color: #56635C; }
+input:focus{ border-color: var(--amber); }
+.input-compact{ width: 130px; }
+.input-medium{ width: 220px; }
+select{
+  width:100%;
+  background: var(--card-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 13px 14px;
+  color: var(--text);
+  font-family:'Manrope', sans-serif;
+  font-size: 16px;
+  outline:none;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238B9A91' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
+select:focus{ border-color: var(--amber); }
+.row2{ display:flex; gap:10px; }
+.row2 .field{ flex:1; }
+.time-input-group{ display:flex; gap:6px; }
+.time-input-group input{ flex: 1.3; min-width:0; }
+.time-input-group select{ flex: 1; min-width:0; padding: 13px 8px; background-position: right 8px center; padding-right: 24px; font-size: 14px; }
+
+.btns{ display:flex; gap: 10px; margin-top: 6px;}
+button{
+  flex:1;
+  border:none;
+  border-radius: 10px;
+  padding: 13px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family:'Manrope', sans-serif;
+  transition: transform .1s, opacity .15s;
+}
+button:active{ transform: scale(0.97); }
+.btn-primary{ background: var(--amber); color: #1A1305; }
+.btn-secondary{ background: transparent; color: var(--amber); border: 1px solid var(--amber-dim); }
+.btn-ghost{ background: transparent; color: var(--muted); border: 1px solid var(--line); font-weight:500; }
+
+/* TARIFA */
+.tariff-row{ display:flex; align-items:center; justify-content:center; }
+.tariff-row .field{ margin-bottom:0; text-align:center; }
+.tariff-row .field input{ margin: 0 auto; display:block; }
+
+/* LISTA DE APARELHOS */
+.appliance-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.appliance-item:last-child{ border-bottom:none; }
+.appliance-item{ cursor: pointer; }
+.appliance-item:hover{ background: rgba(245,166,35,0.04); border-radius: 8px; }
+.ai-icon{ font-size: 20px; margin-right: 10px; flex: none; }
+.ai-info{ flex:1; display:flex; align-items:flex-start; }
+.ai-name{ font-weight:700; font-size:14px; }
+.ai-meta{ font-size:12px; color:var(--muted); font-family:'JetBrains Mono',monospace; margin-top:2px;}
+.ai-remove{
+  background:none; border:none; color: var(--hot); font-size:18px; cursor:pointer; padding:4px 8px; flex:none; font-weight:400;
+}
+.empty-state{ color: var(--muted); font-size: 13px; text-align:center; padding: 18px 0; }
+
+/* RELATÓRIO */
+.report{ display:none; }
+.report.show{ display:block; }
+.stat-grid{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 6px;}
+.stat-box{
+  background: var(--card-2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 8px;
+  text-align:center;
+}
+.stat-label{ font-size: 10px; text-transform:uppercase; letter-spacing:0.06em; color: var(--muted); margin-bottom:6px;}
+.stat-value{ font-family:'JetBrains Mono', monospace; font-size: 16px; font-weight:700; color: var(--text);}
+.stat-sub{ font-size: 10px; color: var(--muted); margin-top: 2px;}
+.section-label{ font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:var(--amber); font-weight:700; margin: 18px 0 10px;}
+
+.insight-box{
+  background: linear-gradient(135deg, rgba(255,107,74,0.12), rgba(255,107,74,0.02));
+  border: 1px solid rgba(255,107,74,0.35);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-top: 14px;
+  display:flex;
+  gap: 12px;
+  align-items:flex-start;
+}
+.insight-icon{ font-size: 20px; line-height:1; }
+.insight-text{ font-size: 13px; line-height:1.5; }
+.insight-text b{ color: var(--hot); }
+
+.bar-row{ margin-bottom: 10px; }
+.bar-label{ display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px; }
+.bar-label .pct{ font-family:'JetBrains Mono', monospace; color: var(--muted); }
+.bar-track{ height: 8px; background: var(--card-2); border-radius: 4px; overflow:hidden; }
+.bar-fill{ height:100%; background: var(--amber); border-radius:4px; transition: width .6s ease; }
+.bar-fill.hot{ background: var(--hot); }
+
+.room-card{
+  background: var(--card-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.room-name{ font-size: 13px; font-weight:700; }
+.room-value{ font-family:'JetBrains Mono', monospace; font-size: 13px; color: var(--amber); }
+
+.detail-card{
+  background: var(--card-2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+.detail-head{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.detail-icon{ font-size: 18px; }
+.detail-name{ font-weight: 800; font-size: 14px; flex:1; }
+.detail-tag{
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 2px 7px;
+}
+.detail-grid{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.detail-stat{ text-align:center; }
+.detail-stat .dlabel{ font-size: 9px; text-transform:uppercase; letter-spacing:0.05em; color: var(--muted); margin-bottom: 3px; }
+.detail-stat .dval{ font-family:'JetBrains Mono', monospace; font-size: 12px; font-weight:700; color: var(--text); }
+.detail-stat .dval.rs{ color: var(--amber); }
+.detail-meta-row{ font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+
+.editing-badge{
+  display:none;
+  background: rgba(245,166,35,0.12);
+  border: 1px solid var(--amber-dim);
+  color: var(--amber);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 14px;
+  text-align:center;
+}
+.editing-badge.show{ display:block; }
+
+.modal-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+.modal-overlay.show{ display:flex; }
+.modal-box{
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 22px;
+  max-width: 360px;
+  width: 100%;
+}
+.modal-title{ font-size: 16px; font-weight: 800; margin: 0 0 8px; }
+.modal-text{ font-size: 13px; color: var(--muted); line-height: 1.5; margin: 0 0 18px; }
+.modal-btns{ display:flex; gap: 10px; }
+
+.footer-note{ text-align:center; font-size: 11px; color: #56635C; margin-top: 24px; line-height:1.6; }
+
+/* PREMIUM BADGE */
+.premium-badge{
+  display:none;
+  background: rgba(111,207,142,0.12);
+  border: 1px solid rgba(111,207,142,0.3);
+  color: var(--green-ok);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-top: 6px;
+  letter-spacing: 0.04em;
+}
+.premium-badge.show{ display:inline-block; }
+
+/* BANNER REMOVER ANÚNCIOS */
+.remove-ads-banner{
+  background: rgba(245,166,35,0.07);
+  border: 1px solid var(--amber-dim);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.remove-ads-banner.hidden{ display:none; }
+.remove-ads-text{ font-size:12px; color:var(--muted); line-height:1.4; }
+.remove-ads-text b{ color:var(--text); }
+.btn-premium{
+  background: var(--amber);
+  color: #1A1305;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family:'Manrope', sans-serif;
+  white-space: nowrap;
+  flex: none;
+  transition: transform .1s;
+}
+.btn-premium:active{ transform:scale(0.97); }
+
+/* INTERSTICIAL */
+.intersticial-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.93);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 20px;
+}
+.intersticial-overlay.show{ display:flex; }
+.intersticial-box{
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 360px;
+  overflow: hidden;
+}
+.intersticial-header{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+}
+.intersticial-label{
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  font-weight: 700;
+}
+.intersticial-timer{
+  font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--muted);
+}
+.intersticial-ad-area{
+  background: var(--card-2);
+  min-height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+}
+.intersticial-footer{
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.btn-close-ad{
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family:'Manrope', sans-serif;
+  background: var(--card-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  transition: opacity .15s, transform .1s;
+}
+.btn-close-ad:disabled{ opacity:0.35; cursor:not-allowed; }
+.btn-close-ad:not(:disabled):active{ transform:scale(0.97); }
+.btn-remove-ads-link{
+  text-align: center;
+  font-size: 12px;
+  color: var(--amber);
+  cursor: pointer;
+  padding: 4px;
+  font-weight: 700;
+}
+</style>
+</head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="eyebrow">Medidor de energia</div>
+    <h1>Calculadora de Conta de Luz</h1>
+    <div class="bolt-icon">⚡</div>
+    <div class="premium-badge" id="premiumBadge">✓ Versão Premium</div>
+  </div>
+
+  <!-- BANNER REMOVER ANÚNCIOS -->
+  <div class="remove-ads-banner" id="removeAdsBanner">
+    <div class="remove-ads-text"><b>Versão gratuita</b><br>Anúncios aparecem ao gerar relatório</div>
+    <button class="btn-premium" id="removaAdsBtn">⭐ Remover R$ 5,00</button>
+  </div>
+
+  <!-- TARIFA -->
+  <div class="card">
+    <div class="card-title" style="justify-content:center;"><span class="dot"></span>Tarifa de energia</div>
+    <div class="tariff-row">
+      <div class="field">
+        <label for="tariff">Valor do kWh na sua conta (R$)</label>
+        <input type="number" id="tariff" class="input-compact" step="0.01" placeholder="ex: 0.95" value="0.95">
+      </div>
+    </div>
+  </div>
+
+  <!-- FORM APARELHO -->
+  <div class="card">
+    <div class="card-title"><span class="dot"></span>Adicionar aparelho</div>
+    <div class="editing-badge" id="editingBadge">✏️ Editando aparelho — altere os dados e clique em "Salvar alterações"</div>
+    <div class="field">
+      <label for="name">Nome do aparelho</label>
+      <input type="text" id="name" class="input-medium" placeholder="ex: Geladeira">
+    </div>
+    <div class="field">
+      <label for="category">Cômodo / categoria</label>
+      <select id="category" class="input-medium">
+        <option value="Cozinha">🍳 Cozinha</option>
+        <option value="Quarto">🛏️ Quarto</option>
+        <option value="Sala">🛋️ Sala</option>
+        <option value="Banheiro">🚿 Banheiro</option>
+        <option value="Lavanderia">🧺 Lavanderia</option>
+        <option value="Área externa">🌳 Área externa</option>
+        <option value="Outro">🔌 Outro</option>
+      </select>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label for="power">Potência (W)</label>
+        <input type="number" id="power" class="input-compact" placeholder="ex: 150" inputmode="decimal">
+      </div>
+      <div class="field">
+        <label for="timeValue">Tempo ligado por dia</label>
+        <div class="time-input-group">
+          <input type="number" id="timeValue" placeholder="ex: 30" step="0.1" inputmode="decimal">
+          <select id="timeUnit">
+            <option value="hours">horas</option>
+            <option value="minutes">minutos</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label for="daysPerMonth">Quantos dias por mês usa esse aparelho?</label>
+      <input type="number" id="daysPerMonth" class="input-compact" placeholder="ex: 30" min="1" max="31" step="1" inputmode="numeric">
+    </div>
+    <div class="btns">
+      <button class="btn-primary" id="saveBtn">Salvar aparelho</button>
+      <button class="btn-ghost" id="cancelEditBtn" style="display:none;">Cancelar edição</button>
+    </div>
+    <div class="btns" style="margin-top:10px;">
+      <button class="btn-secondary" id="reportBtn">Gerar relatório</button>
+    </div>
+  </div>
+
+  <!-- LISTA -->
+  <div class="card">
+    <div class="card-title"><span class="dot"></span>Aparelhos cadastrados</div>
+    <div id="applianceList">
+      <div class="empty-state">Nenhum aparelho cadastrado ainda. Preencha o formulário acima e clique em "Salvar aparelho".</div>
+    </div>
+    <div class="btns" style="margin-top:14px;">
+      <button class="btn-ghost" id="clearBtn">Limpar todos os aparelhos</button>
+    </div>
+  </div>
+
+  <!-- RELATÓRIO -->
+  <div class="card report" id="reportCard">
+    <div class="card-title"><span class="dot"></span>Relatório de consumo</div>
+
+    <div class="section-label">Consumo em kWh</div>
+    <div class="stat-grid">
+      <div class="stat-box"><div class="stat-label">Dia</div><div class="stat-value" id="kwhDay">0</div></div>
+      <div class="stat-box"><div class="stat-label">Semana</div><div class="stat-value" id="kwhWeek">0</div></div>
+      <div class="stat-box"><div class="stat-label">Mês</div><div class="stat-value" id="kwhMonth">0</div></div>
+    </div>
+
+    <div class="section-label">Valor a pagar (R$)</div>
+    <div class="stat-grid">
+      <div class="stat-box"><div class="stat-label">Dia</div><div class="stat-value" id="rsDay">0</div></div>
+      <div class="stat-box"><div class="stat-label">Semana</div><div class="stat-value" id="rsWeek">0</div></div>
+      <div class="stat-box"><div class="stat-label">Mês</div><div class="stat-value" id="rsMonth">0</div></div>
+    </div>
+
+    <div class="section-label">Participação de cada aparelho</div>
+    <div id="barList"></div>
+
+    <div class="section-label">Detalhamento por aparelho</div>
+    <div id="applianceDetailList"></div>
+
+    <div class="section-label">Consumo por cômodo</div>
+    <div id="roomList"></div>
+
+    <div class="insight-box">
+      <div class="insight-icon">⚡</div>
+      <div class="insight-text" id="insightText">Cadastre aparelhos para ver o insight.</div>
+    </div>
+
+    <div class="btns" style="margin-top:18px;">
+      <button class="btn-secondary" id="exportPdfBtn">📄 Exportar PDF</button>
+      <button class="btn-secondary" id="exportXlsxBtn">📊 Exportar Excel</button>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    Os dados ficam salvos no seu app, mesmo se você sair e voltar depois.<br>
+    Os valores são estimativas com base na potência informada — confira sempre sua conta real.
+  </div>
+</div>
+
+<!-- INTERSTICIAL -->
+<div class="intersticial-overlay" id="intersticial">
+  <div class="intersticial-box">
+    <div class="intersticial-header">
+      <span class="intersticial-label">Anúncio</span>
+      <span class="intersticial-timer" id="intersticialTimer">Fechar em 5s</span>
+    </div>
+    <div class="intersticial-ad-area">
+      <!--
+        SUBSTITUA pelo bloco do seu AdSense após criar a conta:
+        <ins class="adsbygoogle"
+             style="display:block;width:300px;height:250px"
+             data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+             data-ad-slot="XXXXXXXXXX"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+      -->
+      <div>
+        <div style="font-size:40px;margin-bottom:12px;">📢</div>
+        <div style="color:var(--muted);font-size:13px;line-height:1.5;">Espaço reservado para anúncio<br><small>Configure seu AdSense para exibir aqui</small></div>
+      </div>
+    </div>
+    <div class="intersticial-footer">
+      <button class="btn-close-ad" id="btnCloseAd" disabled>Fechar anúncio</button>
+      <div class="btn-remove-ads-link" id="btnRemoveAdsFromAd">⭐ Remover anúncios por R$ 5,00</div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box">
+    <div class="modal-title" id="modalTitle">Confirmar ação</div>
+    <p class="modal-text" id="modalText">Tem certeza?</p>
+    <div class="modal-btns">
+      <button class="btn-ghost" id="modalCancel">Cancelar</button>
+      <button class="btn-primary" id="modalConfirm" style="background: var(--hot); color: #1A1305;">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// --- PREMIUM / ADS ---
+const PREMIUM_KEY = 'premium_v1';
+let isPremium = localStorage.getItem(PREMIUM_KEY) === 'true';
+
+function updatePremiumUI(){
+  if(isPremium){
+    document.getElementById('removeAdsBanner').classList.add('hidden');
+    document.getElementById('premiumBadge').classList.add('show');
+  } else {
+    document.getElementById('removeAdsBanner').classList.remove('hidden');
+    document.getElementById('premiumBadge').classList.remove('show');
+  }
+}
+
+function showInterstitial(onClose){
+  if(isPremium){ onClose(); return; }
+  const overlay = document.getElementById('intersticial');
+  const timerEl = document.getElementById('intersticialTimer');
+  const closeBtn = document.getElementById('btnCloseAd');
+  overlay.classList.add('show');
+  closeBtn.disabled = true;
+  closeBtn.textContent = 'Fechar anúncio';
+  let seconds = 5;
+  timerEl.textContent = `Fechar em ${seconds}s`;
+  const interval = setInterval(() => {
+    seconds--;
+    if(seconds <= 0){
+      clearInterval(interval);
+      timerEl.textContent = '';
+      closeBtn.disabled = false;
+    } else {
+      timerEl.textContent = `Fechar em ${seconds}s`;
+    }
+  }, 1000);
+  const close = () => {
+    clearInterval(interval);
+    overlay.classList.remove('show');
+    closeBtn.removeEventListener('click', close);
+    onClose();
+  };
+  closeBtn.addEventListener('click', close);
+}
+
+function purchasePremium(){
+  // TODO: substituir pelo Google Play Billing (Digital Goods API) após publicar:
+  // const service = await window.getDigitalGoodsService('https://play.google.com/billing');
+  // const paymentRequest = new PaymentRequest([{ supportedMethods: 'https://play.google.com/billing',
+  //   data: { sku: 'remove_ads' } }], { total: { label: 'Remover anúncios', amount: { currency: 'BRL', value: '9.90' } } });
+  // const result = await paymentRequest.show();
+  // await result.complete('success');
+  showConfirm(
+    'Remover anúncios — R$ 5,00',
+    'Pagamento único. Os anúncios serão removidos permanentemente neste dispositivo após a confirmação na Play Store.',
+    () => {
+      isPremium = true;
+      localStorage.setItem(PREMIUM_KEY, 'true');
+      updatePremiumUI();
+      document.getElementById('intersticial').classList.remove('show');
+      showAlert('✓ Obrigado! Anúncios removidos. Aproveite a versão Premium!');
+    }
+  );
+}
+
+// --- APP ---
+let appliances = [];
+let editIndex = null;
+let lastReportData = {};
+const STORAGE_KEY = 'appliances_v1';
+
+const CATEGORY_ICONS = {
+  'Cozinha': '🍳',
+  'Quarto': '🛏️',
+  'Sala': '🛋️',
+  'Banheiro': '🚿',
+  'Lavanderia': '🧺',
+  'Área externa': '🌳',
+  'Outro': '🔌'
+};
+
+const $ = (id) => document.getElementById(id);
+
+function showConfirm(title, text, onConfirm){
+  $('modalTitle').textContent = title;
+  $('modalText').textContent = text;
+  $('modalOverlay').classList.add('show');
+
+  const confirmBtn = $('modalConfirm');
+  const cancelBtn = $('modalCancel');
+
+  const cleanup = () => {
+    $('modalOverlay').classList.remove('show');
+    confirmBtn.removeEventListener('click', onConfirmClick);
+    cancelBtn.removeEventListener('click', onCancelClick);
+  };
+  const onConfirmClick = () => { cleanup(); onConfirm(); };
+  const onCancelClick = () => { cleanup(); };
+
+  confirmBtn.addEventListener('click', onConfirmClick);
+  cancelBtn.addEventListener('click', onCancelClick);
+}
+
+function showAlert(text){
+  $('modalTitle').textContent = 'Atenção';
+  $('modalText').textContent = text;
+  $('modalOverlay').classList.add('show');
+  $('modalConfirm').style.display = 'none';
+  $('modalCancel').textContent = 'Entendi';
+
+  const cancelBtn = $('modalCancel');
+  const cleanup = () => {
+    $('modalOverlay').classList.remove('show');
+    $('modalConfirm').style.display = 'block';
+    $('modalCancel').textContent = 'Cancelar';
+    cancelBtn.removeEventListener('click', onCancelClick);
+  };
+  const onCancelClick = () => cleanup();
+  cancelBtn.addEventListener('click', onCancelClick);
+}
+
+async function loadData(){
+  try{
+    if(window.storage){
+      const res = await window.storage.get(STORAGE_KEY);
+      appliances = res ? JSON.parse(res.value) : [];
+    } else {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      appliances = raw ? JSON.parse(raw) : [];
+    }
+  }catch(e){
+    appliances = [];
+  }
+  renderList();
+}
+
+async function saveData(){
+  try{
+    if(window.storage){
+      await window.storage.set(STORAGE_KEY, JSON.stringify(appliances));
+    } else {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appliances));
+    }
+  }catch(e){
+    console.error('Erro ao salvar', e);
+  }
+}
+
+if('serviceWorker' in navigator && !window.storage){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').catch(() => {});
+  });
+}
+
+function hoursOf(a){
+  if(a.timeUnit === 'minutes') return a.timeValue / 60;
+  if(a.timeUnit === 'hours') return a.timeValue;
+  return a.hours || 0; // compatibilidade com dados antigos
+}
+
+function daysPerMonthOf(a){
+  if(a.daysPerMonth) return parseInt(a.daysPerMonth);
+  if(a.daysPerWeek) return parseInt(a.daysPerWeek) * 30 / 7; // compatibilidade com versão anterior (semana)
+  return 30; // compatibilidade com dados antigos
+}
+
+function kwhPerActiveDay(a){
+  return a.power * hoursOf(a) / 1000;
+}
+
+function kwhAvgPerDay(a){
+  return kwhPerActiveDay(a) * daysPerMonthOf(a) / 30;
+}
+
+function formatTime(a){
+  if(a.timeUnit === 'minutes') return `${a.timeValue} min/dia`;
+  if(a.timeUnit === 'hours') return `${a.timeValue} h/dia`;
+  return `${a.hours} h/dia`; // compatibilidade com dados antigos
+}
+
+function formatDays(a){
+  return `${daysPerMonthOf(a)} dias/mês`;
+}
+
+function renderList(){
+  const list = $('applianceList');
+  if(appliances.length === 0){
+    list.innerHTML = '<div class="empty-state">Nenhum aparelho cadastrado ainda. Preencha o formulário acima e clique em "Salvar aparelho".</div>';
+    return;
+  }
+  list.innerHTML = appliances.map((a, i) => {
+    const kwhDay = kwhAvgPerDay(a);
+    const cat = a.category || 'Outro';
+    const icon = CATEGORY_ICONS[cat] || '🔌';
+    return `
+      <div class="appliance-item" onclick="startEdit(${i})">
+        <div class="ai-info">
+          <span class="ai-icon">${icon}</span>
+          <div>
+            <div class="ai-name">${escapeHtml(a.name)}</div>
+            <div class="ai-meta">${cat} · ${a.power} W · ${formatTime(a)} · ${formatDays(a)} · ${kwhDay.toFixed(2)} kWh/dia (média)</div>
+          </div>
+        </div>
+        <button class="ai-remove" onclick="event.stopPropagation(); removeAppliance(${i})">✕</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+async function removeAppliance(i){
+  appliances.splice(i, 1);
+  cancelEdit();
+  await saveData();
+  renderList();
+  if($('reportCard').classList.contains('show')) generateReport();
+}
+
+function totalKwhPerDay(){
+  return appliances.reduce((sum, a) => sum + kwhAvgPerDay(a), 0);
+}
+
+
+
+$('saveBtn').addEventListener('click', async () => {
+  const name = $('name').value.trim();
+  const category = $('category').value;
+  const power = parseFloat($('power').value);
+  const timeValue = parseFloat($('timeValue').value);
+  const timeUnit = $('timeUnit').value;
+  let daysPerMonth = parseInt($('daysPerMonth').value);
+  if(isNaN(daysPerMonth) || daysPerMonth < 1) daysPerMonth = 30;
+  if(daysPerMonth > 31) daysPerMonth = 31;
+
+  if(!name || isNaN(power) || isNaN(timeValue) || power <= 0 || timeValue <= 0){
+    showAlert('Preencha nome, potência (maior que 0) e tempo ligado (maior que 0) corretamente.');
+    return;
+  }
+
+  if(editIndex !== null){
+    appliances[editIndex] = { name, category, power, timeValue, timeUnit, daysPerMonth };
+    cancelEdit();
+  } else {
+    appliances.push({ name, category, power, timeValue, timeUnit, daysPerMonth });
+  }
+
+  await saveData();
+  renderList();
+
+  $('name').value = '';
+  $('power').value = '';
+  $('timeValue').value = '';
+  $('timeUnit').value = 'hours';
+  $('daysPerMonth').value = '30';
+  $('category').value = 'Cozinha';
+  $('name').focus();
+});
+
+function startEdit(i){
+  const a = appliances[i];
+  editIndex = i;
+  $('name').value = a.name;
+  $('category').value = a.category || 'Outro';
+  $('power').value = a.power;
+  if(a.timeUnit){
+    $('timeValue').value = a.timeValue;
+    $('timeUnit').value = a.timeUnit;
+  } else {
+    $('timeValue').value = a.hours; // compatibilidade com dados antigos
+    $('timeUnit').value = 'hours';
+  }
+  if(a.daysPerMonth){
+    $('daysPerMonth').value = a.daysPerMonth;
+  } else if(a.daysPerWeek){
+    $('daysPerMonth').value = Math.round(parseInt(a.daysPerWeek) * 30 / 7);
+  } else {
+    $('daysPerMonth').value = '30';
+  }
+  $('saveBtn').textContent = 'Salvar alterações';
+  $('cancelEditBtn').style.display = 'block';
+  $('editingBadge').classList.add('show');
+  $('name').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  $('name').focus();
+}
+
+function cancelEdit(){
+  editIndex = null;
+  $('saveBtn').textContent = 'Salvar aparelho';
+  $('cancelEditBtn').style.display = 'none';
+  $('editingBadge').classList.remove('show');
+  $('name').value = '';
+  $('power').value = '';
+  $('timeValue').value = '';
+  $('timeUnit').value = 'hours';
+  $('daysPerMonth').value = '30';
+  $('category').value = 'Cozinha';
+}
+
+$('cancelEditBtn').addEventListener('click', cancelEdit);
+
+$('clearBtn').addEventListener('click', () => {
+  if(appliances.length === 0) return;
+  showConfirm(
+    'Limpar todos os aparelhos',
+    'Tem certeza que deseja remover todos os aparelhos cadastrados? Essa ação não pode ser desfeita.',
+    async () => {
+      appliances = [];
+      await saveData();
+      renderList();
+      $('reportCard').classList.remove('show');
+    }
+  );
+});
+
+$('reportBtn').addEventListener('click', () => {
+  if(appliances.length === 0){
+    showAlert('Cadastre pelo menos um aparelho antes de gerar o relatório.');
+    return;
+  }
+  showInterstitial(() => generateReport());
+});
+
+function generateReport(){
+  const tariff = parseFloat($('tariff').value) || 0;
+
+  const kwhDay = totalKwhPerDay();
+  const kwhWeek = kwhDay * 7;
+  const kwhMonth = kwhDay * 30;
+
+  const rsDay = kwhDay * tariff;
+  const rsWeek = kwhWeek * tariff;
+  const rsMonth = kwhMonth * tariff;
+
+  lastReportData = { tariff, kwhDay, kwhWeek, kwhMonth, rsDay, rsWeek, rsMonth };
+
+  $('kwhDay').textContent = kwhDay.toFixed(2);
+  $('kwhWeek').textContent = kwhWeek.toFixed(2);
+  $('kwhMonth').textContent = kwhMonth.toFixed(2);
+
+  $('rsDay').textContent = rsDay.toFixed(2);
+  $('rsWeek').textContent = rsWeek.toFixed(2);
+  $('rsMonth').textContent = rsMonth.toFixed(2);
+
+  // Barras de participação
+  const withKwh = appliances.map(a => ({ ...a, kwh: kwhAvgPerDay(a) }));
+  withKwh.sort((a,b) => b.kwh - a.kwh);
+  const top = withKwh[0];
+
+  const barList = $('barList');
+  barList.innerHTML = withKwh.map(a => {
+    const pct = kwhDay > 0 ? (a.kwh / kwhDay * 100) : 0;
+    const isTop = a === top;
+    return `
+      <div class="bar-row">
+        <div class="bar-label">
+          <span>${escapeHtml(a.name)}</span>
+          <span class="pct">${pct.toFixed(0)}%</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill ${isTop ? 'hot' : ''}" style="width:${pct}%"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const topPct = kwhDay > 0 ? (top.kwh / kwhDay * 100) : 0;
+  const topMonthRs = top.kwh * 30 * tariff;
+  $('insightText').innerHTML = `O aparelho que mais pesa na sua conta é <b>${escapeHtml(top.name)}</b>, responsável por <b>${topPct.toFixed(0)}%</b> do consumo diário. Ele deve custar cerca de <b>R$ ${topMonthRs.toFixed(2)}</b> por mês — se reduzir o tempo de uso dele, é onde você vai sentir mais economia.`;
+
+  // Detalhamento por aparelho
+  const detailList = $('applianceDetailList');
+  detailList.innerHTML = withKwh.map(a => {
+    const cat = a.category || 'Outro';
+    const icon = CATEGORY_ICONS[cat] || '🔌';
+    const dDay = a.kwh;
+    const dWeek = a.kwh * 7;
+    const dMonth = a.kwh * 30;
+    const rDay = dDay * tariff;
+    const rWeek = dWeek * tariff;
+    const rMonth = dMonth * tariff;
+    const isTop = a === top;
+    return `
+      <div class="detail-card">
+        <div class="detail-head">
+          <span class="detail-icon">${icon}</span>
+          <span class="detail-name">${escapeHtml(a.name)}</span>
+          ${isTop ? '<span class="detail-tag" style="color:var(--hot); border-color:rgba(255,107,74,0.4);">maior gasto</span>' : `<span class="detail-tag">${cat}</span>`}
+        </div>
+        <div class="detail-meta-row">${a.power} W · ${formatTime(a)} · ${formatDays(a)}</div>
+        <div class="detail-grid">
+          <div class="detail-stat"><div class="dlabel">kWh/dia</div><div class="dval">${dDay.toFixed(2)}</div></div>
+          <div class="detail-stat"><div class="dlabel">kWh/sem</div><div class="dval">${dWeek.toFixed(2)}</div></div>
+          <div class="detail-stat"><div class="dlabel">kWh/mês</div><div class="dval">${dMonth.toFixed(2)}</div></div>
+        </div>
+        <div class="detail-grid" style="margin-top:8px;">
+          <div class="detail-stat"><div class="dlabel">R$/dia</div><div class="dval rs">${rDay.toFixed(2)}</div></div>
+          <div class="detail-stat"><div class="dlabel">R$/sem</div><div class="dval rs">${rWeek.toFixed(2)}</div></div>
+          <div class="detail-stat"><div class="dlabel">R$/mês</div><div class="dval rs">${rMonth.toFixed(2)}</div></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Consumo por cômodo
+  const roomTotals = {};
+  withKwh.forEach(a => {
+    const cat = a.category || 'Outro';
+    roomTotals[cat] = (roomTotals[cat] || 0) + a.kwh;
+  });
+  const roomEntries = Object.entries(roomTotals).sort((a,b) => b[1] - a[1]);
+  $('roomList').innerHTML = roomEntries.map(([cat, kwh]) => {
+    const icon = CATEGORY_ICONS[cat] || '🔌';
+    const monthRs = kwh * 30 * tariff;
+    return `
+      <div class="room-card">
+        <div class="room-name">${icon} ${cat}</div>
+        <div class="room-value">${kwh.toFixed(2)} kWh/dia · R$ ${monthRs.toFixed(2)}/mês</div>
+      </div>
+    `;
+  }).join('');
+
+  $('reportCard').classList.add('show');
+  $('reportCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  lastReportData.appliances = withKwh;
+  lastReportData.rooms = roomEntries;
+  lastReportData.topName = top.name;
+}
+
+function exportPDF(){
+  if(!lastReportData.appliances){
+    showAlert('Gere o relatório antes de exportar.');
+    return;
+  }
+  if(typeof window.jspdf === 'undefined'){
+    showAlert('Não foi possível carregar a ferramenta de PDF. Verifique sua conexão com a internet e tente novamente.');
+    return;
+  }
+  try{
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const d = lastReportData;
+    let y = 18;
+
+    doc.setFontSize(16);
+    doc.text('Relatorio de Consumo de Energia', 14, y); y += 8;
+    doc.setFontSize(10);
+    doc.text(`Tarifa utilizada: R$ ${d.tariff.toFixed(2)} / kWh`, 14, y); y += 10;
+
+    doc.setFontSize(12);
+    doc.text('Consumo total', 14, y); y += 6;
+    doc.setFontSize(10);
+    doc.text(`Dia: ${d.kwhDay.toFixed(2)} kWh   |   R$ ${d.rsDay.toFixed(2)}`, 14, y); y += 6;
+    doc.text(`Semana: ${d.kwhWeek.toFixed(2)} kWh   |   R$ ${d.rsWeek.toFixed(2)}`, 14, y); y += 6;
+    doc.text(`Mes: ${d.kwhMonth.toFixed(2)} kWh   |   R$ ${d.rsMonth.toFixed(2)}`, 14, y); y += 10;
+
+    doc.setFontSize(12);
+    doc.text('Detalhamento por aparelho', 14, y); y += 6;
+    doc.setFontSize(9);
+    d.appliances.forEach(a => {
+      if(y > 270){ doc.addPage(); y = 18; }
+      const cat = a.category || 'Outro';
+      doc.text(`${a.name} (${cat}) - ${a.power}W, ${formatTime(a)}, ${formatDays(a)}`, 14, y); y += 5;
+      doc.text(`   kWh/dia: ${a.kwh.toFixed(2)}  |  kWh/mes: ${(a.kwh*30).toFixed(2)}  |  R$/mes: ${(a.kwh*30*d.tariff).toFixed(2)}`, 14, y); y += 7;
+    });
+
+    y += 3;
+    doc.setFontSize(12);
+    doc.text('Consumo por comodo', 14, y); y += 6;
+    doc.setFontSize(9);
+    d.rooms.forEach(([cat, kwh]) => {
+      if(y > 270){ doc.addPage(); y = 18; }
+      doc.text(`${cat}: ${kwh.toFixed(2)} kWh/dia  |  R$ ${(kwh*30*d.tariff).toFixed(2)}/mes`, 14, y); y += 6;
+    });
+
+    y += 4;
+    doc.setFontSize(10);
+    if(y > 270){ doc.addPage(); y = 18; }
+    doc.text(`Aparelho que mais pesa na conta: ${d.topName}`, 14, y);
+
+    // Tenta abrir em nova aba (funciona melhor em ambientes restritos/sandbox).
+    // Se o navegador bloquear popups, cai automaticamente para o download direto.
+    try{
+      const blobUrl = doc.output('bloburl');
+      const win = window.open(blobUrl, '_blank');
+      if(!win){
+        doc.save('relatorio-consumo-energia.pdf');
+      }
+    }catch(innerErr){
+      doc.save('relatorio-consumo-energia.pdf');
+    }
+  }catch(err){
+    console.error('Erro ao exportar PDF', err);
+    showAlert('Não foi possível gerar o PDF agora. Se você estiver vendo o app dentro do chat, baixe o arquivo .html e abra-o no navegador para exportar.');
+  }
+}
+
+function exportXLSX(){
+  if(!lastReportData.appliances){
+    showAlert('Gere o relatório antes de exportar.');
+    return;
+  }
+  if(typeof window.XLSX === 'undefined'){
+    showAlert('Não foi possível carregar a ferramenta de Excel. Verifique sua conexão com a internet e tente novamente.');
+    return;
+  }
+  try{
+    const d = lastReportData;
+    const wb = XLSX.utils.book_new();
+
+    const summaryRows = [
+      ['Resumo geral', ''],
+      ['Tarifa (R$/kWh)', d.tariff],
+      ['kWh por dia', d.kwhDay],
+      ['kWh por semana', d.kwhWeek],
+      ['kWh por mês', d.kwhMonth],
+      ['R$ por dia', d.rsDay],
+      ['R$ por semana', d.rsWeek],
+      ['R$ por mês', d.rsMonth],
+      ['Aparelho que mais pesa na conta', d.topName]
+    ];
+    const wsSummary = XLSX.utils.aoa_to_sheet(summaryRows);
+    XLSX.utils.book_append_sheet(wb, wsSummary, 'Resumo');
+
+    const applianceRows = d.appliances.map(a => ({
+      'Aparelho': a.name,
+      'Categoria': a.category || 'Outro',
+      'Potência (W)': a.power,
+      'Tempo ligado/dia': formatTime(a),
+      'Dias/mês': daysPerMonthOf(a),
+      'kWh/dia': Number(a.kwh.toFixed(3)),
+      'kWh/semana': Number((a.kwh*7).toFixed(3)),
+      'kWh/mês': Number((a.kwh*30).toFixed(3)),
+      'R$/dia': Number((a.kwh*d.tariff).toFixed(2)),
+      'R$/semana': Number((a.kwh*7*d.tariff).toFixed(2)),
+      'R$/mês': Number((a.kwh*30*d.tariff).toFixed(2))
+    }));
+    const wsAppliances = XLSX.utils.json_to_sheet(applianceRows);
+    XLSX.utils.book_append_sheet(wb, wsAppliances, 'Aparelhos');
+
+    const roomRows = d.rooms.map(([cat, kwh]) => ({
+      'Cômodo': cat,
+      'kWh/dia': Number(kwh.toFixed(3)),
+      'kWh/mês': Number((kwh*30).toFixed(3)),
+      'R$/mês': Number((kwh*30*d.tariff).toFixed(2))
+    }));
+    const wsRooms = XLSX.utils.json_to_sheet(roomRows);
+    XLSX.utils.book_append_sheet(wb, wsRooms, 'Por cômodo');
+
+    XLSX.writeFile(wb, 'relatorio-consumo-energia.xlsx');
+  }catch(err){
+    console.error('Erro ao exportar Excel', err);
+    showAlert('Não foi possível gerar a planilha agora. Se você estiver vendo o app dentro do chat, baixe o arquivo .html e abra-o no navegador para exportar.');
+  }
+}
+
+$('exportPdfBtn').addEventListener('click', exportPDF);
+$('exportXlsxBtn').addEventListener('click', exportXLSX);
+$('removaAdsBtn').addEventListener('click', purchasePremium);
+$('btnRemoveAdsFromAd').addEventListener('click', purchasePremium);
+
+loadData();
+updatePremiumUI();
+</script>
+</body>
+</html>
