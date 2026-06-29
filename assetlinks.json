@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.vercel.marcosre4_calculadora_luz.twa",
+        "sha256_cert_fingerprints": ["78:C5:A5:08:62:FD:29:0B:A9:BF:4C:F0:FE:85:74:63:85:50:D9:66:1B:D2:61:4C:94:F2:A3:C2:4A:BE:6E:19"]
+      }
+    }]
