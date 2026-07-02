@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap');
+*{ box-sizing:border-box; margin:0; padding:0; }
+html,body{ width:1024px; height:500px; overflow:hidden; }
+body{
+  font-family:'Manrope', sans-serif;
+  background:
+    radial-gradient(ellipse 900px 500px at 78% 15%, rgba(245,166,35,0.16) 0%, transparent 55%),
+    radial-gradient(ellipse 700px 500px at 15% 100%, rgba(111,207,142,0.06) 0%, transparent 60%),
+    linear-gradient(155deg, #101a15 0%, #0B120F 55%, #0F1714 100%);
+  width:1024px;
+  height:500px;
+  position:relative;
+}
+
+/* grid texture */
+.grid{
+  position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(237,234,224,0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(237,234,224,0.028) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: radial-gradient(ellipse 900px 550px at 50% 45%, black 10%, transparent 78%);
+}
+
+.content{
+  position:relative;
+  height:100%;
+  display:flex;
+  align-items:center;
+  padding: 0 66px;
+}
+
+/* LEFT: wordmark block */
+.left{ flex:1; z-index:2; }
+.eyebrow{
+  font-size:14px;
+  font-weight:800;
+  letter-spacing:0.32em;
+  text-transform:uppercase;
+  color:#F5A623;
+  margin-bottom:18px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.eyebrow::before{
+  content:'';
+  width:22px; height:2px;
+  background:#F5A623;
+  display:inline-block;
+}
+h1{
+  font-size:58px;
+  font-weight:800;
+  color:#F3F1E9;
+  line-height:1.04;
+  letter-spacing:-0.025em;
+  margin-bottom:22px;
+}
+h1 .accent{ color:#F5A623; }
+.tagline{
+  font-size:19px;
+  font-weight:500;
+  color:#9AA8A0;
+  line-height:1.5;
+  max-width:430px;
+}
+
+/* RIGHT: dial / meter illustration */
+.right{
+  position:relative;
+  width:340px;
+  height:340px;
+  flex:none;
+  z-index:2;
+}
+.dial-outer{
+  position:absolute; inset:0;
+  border-radius:50%;
+  border:1.5px solid rgba(245,166,35,0.22);
+}
+.dial-mid{
+  position:absolute; inset:34px;
+  border-radius:50%;
+  border:1px solid rgba(237,234,224,0.10);
+}
+.dial-core{
+  position:absolute; inset:68px;
+  border-radius:50%;
+  background: radial-gradient(circle at 34% 30%, #1C2620 0%, #131C17 70%);
+  border:1px solid rgba(245,166,35,0.28);
+  box-shadow:
+    0 0 90px rgba(245,166,35,0.16),
+    inset 0 0 50px rgba(0,0,0,0.5);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.bolt{
+  font-size:88px;
+  color:#F5A623;
+  filter: drop-shadow(0 0 34px rgba(245,166,35,0.65));
+}
+/* tick marks around dial */
+.ticks{ position:absolute; inset:0; }
+.tick{
+  position:absolute;
+  left:50%; top:50%;
+  width:2px; height:11px;
+  background:rgba(245,166,35,0.5);
+  transform-origin:50% 170px;
+}
+
+/* small stat chips floating */
+.chip{
+  position:absolute;
+  background:rgba(22,31,27,0.88);
+  border:1px solid rgba(42,53,47,0.9);
+  border-radius:12px;
+  padding:10px 16px;
+  backdrop-filter: blur(2px);
+}
+.chip-1{ top:8px; left:-38px; }
+.chip-2{ bottom:20px; right:-46px; }
+.chip-label{
+  font-size:9px;
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+  color:#8B9A91;
+  margin-bottom:3px;
+  font-weight:700;
+}
+.chip-value{
+  font-family:'JetBrains Mono', monospace;
+  font-size:15px;
+  font-weight:700;
+  color:#EDEAE0;
+}
+.chip-value.hot{ color:#FF6B4A; }
+.chip-value.green{ color:#6FCF8E; }
+
+/* bottom hairline */
+.baseline{
+  position:absolute;
+  left:66px; right:66px; bottom:0;
+  height:1px;
+  background:linear-gradient(90deg, rgba(245,166,35,0.4), transparent);
+}
+</style>
+</head>
+<body>
+
+<div class="grid"></div>
+
+<div class="content">
+  <div class="left">
+    <div class="eyebrow">Medidor de energia</div>
+    <h1>Sua conta de<br>luz, sob <span class="accent">controle</span></h1>
+    <div class="tagline">Cadastre seus aparelhos e veja exatamente quanto cada um custa — por dia, semana e mês.</div>
+  </div>
+
+  <div class="right">
+    <div class="dial-outer"></div>
+    <div class="dial-mid"></div>
+    <div class="ticks" id="ticks"></div>
+    <div class="dial-core"><div class="bolt">⚡</div></div>
+
+    <div class="chip chip-1">
+      <div class="chip-label">Maior gasto</div>
+      <div class="chip-value hot">Ar-cond. 51%</div>
+    </div>
+    <div class="chip chip-2">
+      <div class="chip-label">Consumo/mês</div>
+      <div class="chip-value green">R$ 419,81</div>
+    </div>
+  </div>
+</div>
+
+<div class="baseline"></div>
+
+<script>
+const ticks = document.getElementById('ticks');
+for(let i=0;i<36;i++){
+  const t = document.createElement('div');
+  t.className = 'tick';
+  t.style.transform = `translate(-1px,-170px) rotate(${i*10}deg)`;
+  t.style.transformOrigin = '1px 170px';
+  if(i % 3 !== 0) t.style.opacity = '0.35';
+  ticks.appendChild(t);
+}
+</script>
+
+</body>
+</html>
