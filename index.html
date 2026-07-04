@@ -232,6 +232,43 @@ button:active{ transform: scale(0.97); }
 .bar-fill{ height:100%; background: var(--amber); border-radius:4px; transition: width .6s ease; }
 .bar-fill.hot{ background: var(--hot); }
 
+/* SIMULADOR E SE */
+.sim-box{
+  background: var(--card-2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.sim-slider-row{
+  display:flex;
+  align-items:center;
+  gap: 12px;
+  margin: 12px 0 10px;
+}
+.sim-slider-row input[type="range"]{
+  flex:1;
+  padding: 0;
+  height: 6px;
+  accent-color: var(--amber);
+  background: transparent;
+  border: none;
+}
+.sim-pct{
+  font-family:'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--amber);
+  min-width: 44px;
+  text-align: right;
+}
+.sim-result{
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.sim-result b{ color: var(--green-ok); }
+.sim-result .new-total{ color: var(--text); }
+
 .room-card{
   background: var(--card-2);
   border: 1px solid var(--line);
@@ -552,6 +589,12 @@ button:active{ transform: scale(0.97); }
     <div class="card-title"><span class="dot"></span>Adicionar aparelho</div>
     <div class="editing-badge" id="editingBadge">✏️ Editando aparelho — altere os dados e clique em "Salvar alterações"</div>
     <div class="field">
+      <label for="preset">Escolha um aparelho comum (ou digite abaixo)</label>
+      <select id="preset">
+        <option value="">— Digitar manualmente —</option>
+      </select>
+    </div>
+    <div class="field">
       <label for="name">Nome do aparelho</label>
       <input type="text" id="name" class="input-medium" placeholder="ex: Geladeira">
     </div>
@@ -637,6 +680,17 @@ button:active{ transform: scale(0.97); }
     <div class="insight-box">
       <div class="insight-icon">⚡</div>
       <div class="insight-text" id="insightText">Cadastre aparelhos para ver o insight.</div>
+    </div>
+
+    <div class="section-label">Simulador "E se?"</div>
+    <div class="sim-box">
+      <label for="simAppliance">Se eu usar menos este aparelho...</label>
+      <select id="simAppliance"></select>
+      <div class="sim-slider-row">
+        <input type="range" id="simSlider" min="0" max="100" step="5" value="0">
+        <span class="sim-pct" id="simPct">0%</span>
+      </div>
+      <div class="sim-result" id="simResult">Arraste o controle para simular quanto você economizaria reduzindo o tempo de uso.</div>
     </div>
 
     <div class="btns" style="margin-top:18px;">
@@ -843,7 +897,60 @@ const CATEGORY_ICONS = {
   'Outro': '🔌'
 };
 
+// Catálogo de aparelhos comuns com potência típica (W)
+const APPLIANCE_PRESETS = [
+  { name: 'Chuveiro elétrico',       power: 5500, category: 'Banheiro' },
+  { name: 'Torneira elétrica',       power: 4500, category: 'Cozinha' },
+  { name: 'Secadora de roupas',      power: 3500, category: 'Lavanderia' },
+  { name: 'Fogão elétrico / cooktop',power: 2000, category: 'Cozinha' },
+  { name: 'Secador de cabelo',       power: 1900, category: 'Banheiro' },
+  { name: 'Forno elétrico',          power: 1750, category: 'Cozinha' },
+  { name: 'Air fryer',               power: 1500, category: 'Cozinha' },
+  { name: 'Lava-louças',             power: 1500, category: 'Cozinha' },
+  { name: 'Ar-condicionado 9000 BTU',power: 1400, category: 'Quarto' },
+  { name: 'Micro-ondas',             power: 1200, category: 'Cozinha' },
+  { name: 'Ferro de passar',         power: 1200, category: 'Lavanderia' },
+  { name: 'Aspirador de pó',         power: 1000, category: 'Outro' },
+  { name: 'Cafeteira elétrica',      power: 800,  category: 'Cozinha' },
+  { name: 'Sanduicheira / grill',    power: 800,  category: 'Cozinha' },
+  { name: 'Bomba d’água',       power: 750,  category: 'Área externa' },
+  { name: 'Máquina de lavar roupas', power: 700,  category: 'Lavanderia' },
+  { name: 'Liquidificador',          power: 500,  category: 'Cozinha' },
+  { name: 'Computador desktop',      power: 300,  category: 'Quarto' },
+  { name: 'Freezer',                 power: 200,  category: 'Cozinha' },
+  { name: 'Geladeira',               power: 150,  category: 'Cozinha' },
+  { name: 'Videogame',               power: 150,  category: 'Sala' },
+  { name: 'TV LED 50"',              power: 120,  category: 'Sala' },
+  { name: 'Ventilador',              power: 120,  category: 'Quarto' },
+  { name: 'Purificador de água',     power: 100,  category: 'Cozinha' },
+  { name: 'Notebook',                power: 65,   category: 'Quarto' },
+  { name: 'Chapinha / prancha',      power: 45,   category: 'Banheiro' },
+  { name: 'Carregador de celular',   power: 20,   category: 'Quarto' },
+  { name: 'Roteador Wi-Fi',          power: 10,   category: 'Outro' },
+  { name: 'Lâmpada LED',             power: 10,   category: 'Outro' }
+];
+
 const $ = (id) => document.getElementById(id);
+
+// Preenche o seletor de aparelhos comuns
+function initPresets(){
+  const sel = $('preset');
+  APPLIANCE_PRESETS.forEach((p, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    const icon = CATEGORY_ICONS[p.category] || '🔌';
+    opt.textContent = `${icon} ${p.name} — ${p.power} W`;
+    sel.appendChild(opt);
+  });
+  sel.addEventListener('change', () => {
+    if(sel.value === '') return;
+    const p = APPLIANCE_PRESETS[sel.value];
+    $('name').value = p.name;
+    $('power').value = p.power;
+    $('category').value = p.category;
+    $('timeValue').focus();
+  });
+}
 
 function showConfirm(title, text, onConfirm){
   $('modalTitle').textContent = title;
@@ -989,6 +1096,51 @@ function totalKwhPerDay(){
   return appliances.reduce((sum, a) => sum + kwhAvgPerDay(a), 0);
 }
 
+// --- SIMULADOR "E SE?" ---
+function initSimulator(){
+  $('simAppliance').addEventListener('change', () => {
+    $('simSlider').value = 0;
+    updateSim();
+  });
+  $('simSlider').addEventListener('input', updateSim);
+}
+
+function populateSimulator(){
+  const sel = $('simAppliance');
+  sel.innerHTML = lastReportData.appliances.map((a, i) => {
+    const icon = CATEGORY_ICONS[a.category || 'Outro'] || '🔌';
+    return `<option value="${i}">${icon} ${escapeHtml(a.name)}</option>`;
+  }).join('');
+  sel.value = '0'; // lista já vem ordenada: o maior gastador primeiro
+  $('simSlider').value = 0;
+  updateSim();
+}
+
+function simTimeLabel(a, factor){
+  let val, unit;
+  if(a.timeUnit === 'minutes'){ val = a.timeValue; unit = 'min/dia'; }
+  else if(a.timeUnit === 'hours'){ val = a.timeValue; unit = 'h/dia'; }
+  else { val = a.hours || 0; unit = 'h/dia'; }
+  const fmt = (v) => (unit === 'min/dia') ? Math.round(v) : (Math.round(v * 10) / 10);
+  return `de ${fmt(val)} para ${fmt(val * factor)} ${unit}`;
+}
+
+function updateSim(){
+  const d = lastReportData;
+  if(!d.appliances || d.appliances.length === 0) return;
+  const idx = parseInt($('simAppliance').value) || 0;
+  const a = d.appliances[idx];
+  const pct = parseInt($('simSlider').value);
+  $('simPct').textContent = `-${pct}%`;
+  if(pct === 0){
+    $('simResult').textContent = 'Arraste o controle para simular quanto você economizaria reduzindo o tempo de uso.';
+    return;
+  }
+  const savedMonth = a.kwh * 30 * d.tariff * pct / 100;
+  const newTotal = d.rsMonth - savedMonth;
+  $('simResult').innerHTML = `Reduzindo <b>${pct}%</b> o uso de <b>${escapeHtml(a.name)}</b> (${simTimeLabel(a, 1 - pct/100)}), você economiza <b>R$ ${savedMonth.toFixed(2)}/mês</b> — cerca de R$ ${(savedMonth * 12).toFixed(2)} por ano. Nova conta estimada: <span class="new-total">R$ ${newTotal.toFixed(2)}/mês</span>.`;
+}
+
 
 
 $('saveBtn').addEventListener('click', async () => {
@@ -1022,6 +1174,7 @@ $('saveBtn').addEventListener('click', async () => {
   $('timeUnit').value = 'hours';
   $('daysPerMonth').value = '30';
   $('category').value = 'Cozinha';
+  $('preset').value = '';
   $('name').focus();
 });
 
@@ -1063,6 +1216,7 @@ function cancelEdit(){
   $('timeUnit').value = 'hours';
   $('daysPerMonth').value = '30';
   $('category').value = 'Cozinha';
+  $('preset').value = '';
 }
 
 $('cancelEditBtn').addEventListener('click', cancelEdit);
@@ -1194,6 +1348,8 @@ function generateReport(){
   lastReportData.appliances = withKwh;
   lastReportData.rooms = roomEntries;
   lastReportData.topName = top.name;
+
+  populateSimulator();
 }
 
 function exportPDF(){
@@ -1358,6 +1514,8 @@ $('btnRemoveAdsFromRewarded').addEventListener('click', () => {
   purchasePremium();
 });
 
+initPresets();
+initSimulator();
 loadData();
 updatePremiumUI();
 </script>
