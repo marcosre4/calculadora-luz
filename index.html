@@ -1061,6 +1061,20 @@ function simOriginalValue(a){
   return { val: a.hours || 0, unit: 'h/dia' };
 }
 
+// Converte um valor (em horas ou minutos) para minutos totais
+function toTotalMinutes(val, unit){
+  return unit === 'min/dia' ? val : val * 60;
+}
+
+// Formata minutos totais como "45 min/dia", "1h/dia" ou "1h 30min/dia"
+function formatDuration(totalMinutes){
+  totalMinutes = Math.round(totalMinutes);
+  if(totalMinutes < 60) return `${totalMinutes} min/dia`;
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+  return m === 0 ? `${h}h/dia` : `${h}h ${m}min/dia`;
+}
+
 function setupSimForSelected(){
   const d = lastReportData;
   if(!d.appliances || d.appliances.length === 0) return;
@@ -1093,8 +1107,7 @@ function updateSim(){
 
   const { val: originalVal, unit } = simOriginalValue(a);
   const newVal = parseFloat($('simSlider').value);
-  const fmt = (v) => unit === 'min/dia' ? Math.round(v) : (Math.round(v * 10) / 10);
-  $('simPct').textContent = `${fmt(newVal)} ${unit}`;
+  $('simPct').textContent = formatDuration(toTotalMinutes(newVal, unit));
 
   if(originalVal <= 0 || newVal >= originalVal){
     $('simResult').textContent = 'Arraste o controle para simular quanto você economizaria reduzindo o tempo de uso.';
@@ -1106,7 +1119,9 @@ function updateSim(){
   const savedMonth = (a.kwh - newKwh) * 30 * d.tariff;
   const newTotal = d.rsMonth - savedMonth;
   const pctReduction = Math.round((1 - factor) * 100);
-  $('simResult').innerHTML = `Reduzindo de <b>${fmt(originalVal)}</b> para <b>${fmt(newVal)} ${unit}</b> (-${pctReduction}%) em <b>${escapeHtml(a.name)}</b>, você economiza <b>R$ ${savedMonth.toFixed(2)}/mês</b> — cerca de R$ ${(savedMonth * 12).toFixed(2)} por ano. Nova conta estimada: <span class="new-total">R$ ${newTotal.toFixed(2)}/mês</span>.`;
+  const fromLabel = formatDuration(toTotalMinutes(originalVal, unit));
+  const toLabel = formatDuration(toTotalMinutes(newVal, unit));
+  $('simResult').innerHTML = `Reduzindo de <b>${fromLabel}</b> para <b>${toLabel}</b> (-${pctReduction}%) em <b>${escapeHtml(a.name)}</b>, você economiza <b>R$ ${savedMonth.toFixed(2)}/mês</b> — cerca de R$ ${(savedMonth * 12).toFixed(2)} por ano. Nova conta estimada: <span class="new-total">R$ ${newTotal.toFixed(2)}/mês</span>.`;
 }
 
 
