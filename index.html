@@ -46,6 +46,9 @@ body{
   margin: 0 auto;
   padding: calc(20px + env(safe-area-inset-top)) 18px calc(40px + env(safe-area-inset-bottom));
 }
+.wrap.has-sticky-banner{
+  padding-bottom: calc(90px + env(safe-area-inset-bottom));
+}
 
 /* HEADER / SIGNATURE DIAL */
 .header{
@@ -438,12 +441,87 @@ button:active{ transform: scale(0.97); }
   padding: 4px;
   font-weight: 700;
 }
+
+/* BANNER FIXO (STICKY) */
+.sticky-banner{
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 90;
+  background: var(--card);
+  border-top: 1px solid var(--line);
+  padding: 8px calc(12px + env(safe-area-inset-left)) calc(8px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-right));
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.sticky-banner.show{ display:flex; }
+.sticky-banner-inner{
+  width: 100%;
+  max-width: 428px;
+  min-height: 50px;
+  background: var(--card-2);
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 11px;
+  text-align: center;
+  padding: 6px 10px;
+}
+
+/* RECOMPENSADO */
+.rewarded-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.93);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 20px;
+}
+.rewarded-overlay.show{ display:flex; }
+.rewarded-box{
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 360px;
+  overflow: hidden;
+  text-align: center;
+}
+.rewarded-header{
+  padding: 18px 16px 10px;
+}
+.rewarded-icon{ font-size: 32px; margin-bottom: 8px; }
+.rewarded-title{ font-size: 15px; font-weight: 800; margin-bottom: 6px; }
+.rewarded-desc{ font-size: 12px; color: var(--muted); line-height: 1.5; padding: 0 8px; }
+.rewarded-ad-area{
+  background: var(--card-2);
+  min-height: 220px;
+  margin: 14px 14px 0;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.rewarded-footer{
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 </style>
 </head>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <body>
-<div class="wrap">
+<div class="wrap" id="wrap">
 
   <div class="header">
     <div class="eyebrow">Medidor de energia</div>
@@ -565,6 +643,7 @@ button:active{ transform: scale(0.97); }
       <button class="btn-secondary" id="exportPdfBtn">📄 Exportar PDF</button>
       <button class="btn-secondary" id="exportXlsxBtn">📊 Exportar Excel</button>
     </div>
+    <div style="font-size:10px; color:var(--muted); text-align:center; margin-top:8px;" id="exportAdNotice">Exportação gratuita mediante anúncio recompensado</div>
   </div>
 
   <div class="footer-note">
@@ -601,6 +680,42 @@ button:active{ transform: scale(0.97); }
   </div>
 </div>
 
+<!-- RECOMPENSADO -->
+<div class="rewarded-overlay" id="rewarded">
+  <div class="rewarded-box">
+    <div class="rewarded-header">
+      <div class="rewarded-icon">🎁</div>
+      <div class="rewarded-title">Assista para exportar grátis</div>
+      <div class="rewarded-desc">Assista ao anúncio completo para desbloquear a exportação deste relatório.</div>
+    </div>
+    <div class="rewarded-ad-area">
+      <!--
+        SUBSTITUA pelo bloco do seu AdMob Rewarded após criar a unidade:
+        carregar via SDK do AdMob (rewarded ad) e chamar show() aqui
+      -->
+      <div>
+        <div style="font-size:36px;margin-bottom:10px;">📢</div>
+        <div style="color:var(--muted);font-size:12px;line-height:1.5;">Espaço reservado para anúncio recompensado<br><small id="rewardedTimerText">Carregando... 8s</small></div>
+      </div>
+    </div>
+    <div class="rewarded-footer">
+      <button class="btn-close-ad" id="btnClaimReward" disabled>Aguarde...</button>
+      <div class="btn-remove-ads-link" id="btnRemoveAdsFromRewarded">⭐ Remover anúncios por R$ 5,00</div>
+    </div>
+  </div>
+</div>
+
+<!-- BANNER FIXO -->
+<div class="sticky-banner" id="stickyBanner">
+  <div class="sticky-banner-inner">
+    <!--
+      SUBSTITUA pelo bloco do seu AdMob Banner após criar a unidade:
+      <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX"></ins>
+    -->
+    Espaço reservado — banner de anúncio (320x50)
+  </div>
+</div>
+
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal-box">
     <div class="modal-title" id="modalTitle">Confirmar ação</div>
@@ -621,10 +736,46 @@ function updatePremiumUI(){
   if(isPremium){
     document.getElementById('removeAdsBanner').classList.add('hidden');
     document.getElementById('premiumBadge').classList.add('show');
+    document.getElementById('stickyBanner').classList.remove('show');
+    document.getElementById('wrap').classList.remove('has-sticky-banner');
+    document.getElementById('exportAdNotice').style.display = 'none';
   } else {
     document.getElementById('removeAdsBanner').classList.remove('hidden');
     document.getElementById('premiumBadge').classList.remove('show');
+    document.getElementById('stickyBanner').classList.add('show');
+    document.getElementById('wrap').classList.add('has-sticky-banner');
+    document.getElementById('exportAdNotice').style.display = 'block';
   }
+}
+
+function showRewardedAd(onReward){
+  if(isPremium){ onReward(); return; }
+  const overlay = document.getElementById('rewarded');
+  const timerText = document.getElementById('rewardedTimerText');
+  const claimBtn = document.getElementById('btnClaimReward');
+  overlay.classList.add('show');
+  claimBtn.disabled = true;
+  claimBtn.textContent = 'Aguarde...';
+  let seconds = 8;
+  timerText.textContent = `Carregando... ${seconds}s`;
+  const interval = setInterval(() => {
+    seconds--;
+    if(seconds <= 0){
+      clearInterval(interval);
+      timerText.textContent = 'Anúncio concluído!';
+      claimBtn.disabled = false;
+      claimBtn.textContent = '🎁 Resgatar e exportar';
+    } else {
+      timerText.textContent = `Carregando... ${seconds}s`;
+    }
+  }, 1000);
+  const claim = () => {
+    clearInterval(interval);
+    overlay.classList.remove('show');
+    claimBtn.removeEventListener('click', claim);
+    onReward();
+  };
+  claimBtn.addEventListener('click', claim);
 }
 
 function showInterstitial(onClose){
@@ -1172,10 +1323,14 @@ function exportXLSX(){
   }
 }
 
-$('exportPdfBtn').addEventListener('click', exportPDF);
-$('exportXlsxBtn').addEventListener('click', exportXLSX);
+$('exportPdfBtn').addEventListener('click', () => showRewardedAd(exportPDF));
+$('exportXlsxBtn').addEventListener('click', () => showRewardedAd(exportXLSX));
 $('removaAdsBtn').addEventListener('click', purchasePremium);
 $('btnRemoveAdsFromAd').addEventListener('click', purchasePremium);
+$('btnRemoveAdsFromRewarded').addEventListener('click', () => {
+  document.getElementById('rewarded').classList.remove('show');
+  purchasePremium();
+});
 
 loadData();
 updatePremiumUI();
