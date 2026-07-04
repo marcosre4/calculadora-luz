@@ -1093,7 +1093,7 @@ function setupSimForSelected(){
   const slider = $('simSlider');
   slider.min = 0;
   slider.max = val;
-  slider.step = unit === 'min/dia' ? 1 : (val <= 5 ? 0.1 : 0.5);
+  slider.step = unit === 'min/dia' ? 10 : (10 / 60); // passos de 10 em 10 minutos
   slider.value = val;
   updateSim();
 }
