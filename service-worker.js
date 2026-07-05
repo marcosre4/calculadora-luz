@@ -1,4 +1,4 @@
-const CACHE_NAME = 'conta-de-luz-v1';
+const CACHE_NAME = 'conta-de-luz-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -28,13 +28,13 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET' || !event.request.url.startsWith(self.location.origin)) {
     return;
   }
+  // Rede primeiro: sempre busca a versão mais recente quando online.
+  // Só cai no cache se estiver offline (garante que atualizações apareçam na hora).
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      return cached || fetch(event.request).then((response) => {
-        const responseClone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
-        return response;
-      }).catch(() => cached);
-    })
+    fetch(event.request).then((response) => {
+      const responseClone = response.clone();
+      caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
+      return response;
+    }).catch(() => caches.match(event.request))
   );
 });
