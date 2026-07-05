@@ -1461,24 +1461,35 @@ function exportXLSX(){
     XLSX.utils.book_append_sheet(wb, wsRooms, 'Por cômodo');
 
     const xlsxData = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    const xlsxFile = new File([xlsxData], 'relatorio-consumo-energia.xlsx', {
+    const xlsxFileName = 'relatorio-consumo-energia.xlsx';
+
+    // Alguns Androids não reconhecem o MIME type oficial de xlsx no canShare,
+    // mesmo apps como WhatsApp/Drive aceitando o arquivo normalmente.
+    // Tenta primeiro com o tipo correto, depois com um tipo genérico, antes de cair no download.
+    const xlsxFileExact = new File([xlsxData], xlsxFileName, {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     });
+    const xlsxFileGeneric = new File([xlsxData], xlsxFileName, {
+      type: 'application/octet-stream'
+    });
 
-    // Compartilhar via Web Share API (WhatsApp, e-mail, Drive etc.)
-    if(navigator.canShare && navigator.canShare({ files: [xlsxFile] })){
-      navigator.share({
-        files: [xlsxFile],
-        title: 'Relatório de Consumo de Energia',
-        text: 'Meu relatório de consumo de energia gerado pela Calculadora de Conta de Luz.'
-      }).catch((shareErr) => {
-        if(shareErr.name !== 'AbortError'){
-          XLSX.writeFile(wb, 'relatorio-consumo-energia.xlsx');
-        }
+    const shareFile = (file) => navigator.share({
+      files: [file],
+      title: 'Relatório de Consumo de Energia',
+      text: 'Meu relatório de consumo de energia gerado pela Calculadora de Conta de Luz.'
+    });
+
+    if(navigator.canShare && navigator.canShare({ files: [xlsxFileExact] })){
+      shareFile(xlsxFileExact).catch((shareErr) => {
+        if(shareErr.name !== 'AbortError') XLSX.writeFile(wb, xlsxFileName);
+      });
+    } else if(navigator.canShare && navigator.canShare({ files: [xlsxFileGeneric] })){
+      shareFile(xlsxFileGeneric).catch((shareErr) => {
+        if(shareErr.name !== 'AbortError') XLSX.writeFile(wb, xlsxFileName);
       });
     } else {
       // Fallback: download direto (desktop / navegadores sem suporte)
-      XLSX.writeFile(wb, 'relatorio-consumo-energia.xlsx');
+      XLSX.writeFile(wb, xlsxFileName);
     }
   }catch(err){
     console.error('Erro ao exportar Excel', err);
