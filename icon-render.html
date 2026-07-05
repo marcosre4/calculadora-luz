@@ -13,100 +13,48 @@ svg{display:block;width:100vw;height:100vh;}
 
 <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="bg" x1="0.1" y1="0" x2="0.9" y2="1">
-      <stop offset="0%" stop-color="#FFD37A"/>
-      <stop offset="55%" stop-color="#F5A623"/>
-      <stop offset="100%" stop-color="#E08E10"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FCC55C"/>
+      <stop offset="100%" stop-color="#F5A623"/>
     </linearGradient>
     <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#FFFFFF"/>
-      <stop offset="100%" stop-color="#E9E6DC"/>
+      <stop offset="0%" stop-color="#FFFDF8"/>
+      <stop offset="100%" stop-color="#F1ECDD"/>
     </linearGradient>
-    <linearGradient id="accentStripe" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#2E7D5B"/>
-      <stop offset="100%" stop-color="#0F4A34"/>
-    </linearGradient>
-    <linearGradient id="bolt" x1="0.2" y1="0" x2="0.8" y2="1">
-      <stop offset="0%" stop-color="#FFE49A"/>
-      <stop offset="45%" stop-color="#F9B93B"/>
-      <stop offset="100%" stop-color="#E08A16"/>
-    </linearGradient>
-    <filter id="paperShadow" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#3D2A00" flood-opacity="0.30"/>
-    </filter>
-    <filter id="boltGlow" x="-60%" y="-60%" width="220%" height="220%">
-      <feDropShadow dx="0" dy="4" stdDeviation="7" flood-color="#7A4E00" flood-opacity="0.45"/>
-    </filter>
-    <radialGradient id="boltHalo" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#FFE9A8" stop-opacity="0.95"/>
-      <stop offset="55%" stop-color="#FFD166" stop-opacity="0.45"/>
-      <stop offset="100%" stop-color="#FFD166" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="rsText" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#2E7D5B"/>
-      <stop offset="100%" stop-color="#0F4A34"/>
-    </linearGradient>
-    <filter id="softBlur" x="-100%" y="-100%" width="300%" height="300%">
-      <feGaussianBlur stdDeviation="16"/>
-    </filter>
   </defs>
 
-  <!-- background -->
-  <rect x="0" y="0" width="512" height="512" rx="118" fill="url(#bg)"/>
-  <rect x="0" y="0" width="512" height="512" rx="118" fill="none" stroke="#00000018" stroke-width="2"/>
-  <!-- top-left soft highlight for depth -->
-  <ellipse cx="150" cy="110" rx="190" ry="140" fill="#FFFFFF" opacity="0.14"/>
+  <!-- background rounded square (adaptive icon style) -->
+  <rect x="0" y="0" width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect x="0" y="0" width="512" height="512" rx="112" fill="none" stroke="#00000014" stroke-width="2"/>
 
-  <!-- bill / paper sheet with folded corner -->
-  <g filter="url(#paperShadow)">
-    <path d="M 150 88
-             L 322 88
-             L 362 128
-             L 362 424
-             Q 362 432 354 432
-             L 158 432
-             Q 150 432 150 424
-             Z"
-          fill="url(#paper)" stroke="#7A6B45" stroke-width="6" stroke-linejoin="round"/>
-    <!-- folded corner triangle -->
-    <path d="M 322 88 L 322 122 Q 322 128 328 128 L 362 128 Z"
-          fill="#D8CBA0" stroke="#7A6B45" stroke-width="5" stroke-linejoin="round"/>
-  </g>
-
-  <!-- accent header stripe (letterhead) -->
-  <path d="M 150 88 L 322 88 L 322 108 L 150 108 Z" fill="url(#accentStripe)"/>
-  <path d="M 150 88 L 322 88 L 322 108 L 150 108 Z" fill="#000000" opacity="0.06"/>
+  <!-- bill / paper sheet -->
+  <rect x="146" y="86" width="220" height="340" rx="14" fill="url(#paper)" stroke="#E4DCC6" stroke-width="3"/>
 
   <!-- perforated top edge -->
-  <g fill="#FFFFFF" fill-opacity="0.55">
-    <circle cx="172" cy="88" r="5"/>
-    <circle cx="200" cy="88" r="5"/>
-    <circle cx="228" cy="88" r="5"/>
-    <circle cx="256" cy="88" r="5"/>
-    <circle cx="284" cy="88" r="5"/>
+  <g fill="#0F1714" fill-opacity="0.08">
+    <circle cx="166" cy="86" r="5"/>
+    <circle cx="196" cy="86" r="5"/>
+    <circle cx="226" cy="86" r="5"/>
+    <circle cx="256" cy="86" r="5"/>
+    <circle cx="286" cy="86" r="5"/>
+    <circle cx="316" cy="86" r="5"/>
+    <circle cx="346" cy="86" r="5"/>
   </g>
 
   <!-- header text lines -->
-  <rect x="174" y="134" width="150" height="10" rx="5" fill="#0F1714" fill-opacity="0.14"/>
-  <rect x="174" y="154" width="104" height="10" rx="5" fill="#0F1714" fill-opacity="0.11"/>
-
-  <!-- divider line -->
-  <rect x="174" y="182" width="164" height="2" fill="#0F1714" fill-opacity="0.10"/>
-
-  <!-- glow halo behind bolt -->
-  <circle cx="260" cy="250" r="90" fill="url(#boltHalo)" filter="url(#softBlur)"/>
+  <rect x="172" y="112" width="168" height="9" rx="4.5" fill="#0F1714" fill-opacity="0.10"/>
+  <rect x="172" y="130" width="118" height="9" rx="4.5" fill="#0F1714" fill-opacity="0.10"/>
 
   <!-- lightning bolt -->
-  <g filter="url(#boltGlow)">
-    <path d="M 274 190 L 226 270 L 254 270 L 244 314 L 296 244 L 264 244 Z"
-          fill="url(#bolt)" stroke="#8A5A0E" stroke-width="5" stroke-linejoin="round"/>
-  </g>
+  <path d="M 274 156 L 226 236 L 254 236 L 244 280 L 296 210 L 264 210 Z"
+        fill="#F5A623" stroke="#8A5A0E" stroke-width="4" stroke-linejoin="round"/>
 
-  <!-- R$ text -->
-  <text x="256" y="392" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="800" font-size="60" fill="url(#rsText)">R$</text>
+  <!-- equals sign -->
+  <rect x="220" y="308" width="72" height="10" rx="5" fill="#2B241A"/>
+  <rect x="220" y="328" width="72" height="10" rx="5" fill="#2B241A"/>
 
-  <!-- footer text line -->
-  <rect x="174" y="410" width="90" height="8" rx="4" fill="#0F1714" fill-opacity="0.08"/>
+  <!-- R$ text (maior) -->
+  <text x="256" y="396" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="800" font-size="72" fill="#1A1305">R$</text>
 
 </svg>
 
