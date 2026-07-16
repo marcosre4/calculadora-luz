@@ -651,17 +651,79 @@ function updatePremiumUI(){
   }
 }
 
-function purchasePremium(){
-  // TODO: substituir pelo Google Play Billing (Digital Goods API) após publicar:
-  // const service = await window.getDigitalGoodsService('https://play.google.com/billing');
-  // const paymentRequest = new PaymentRequest([{ supportedMethods: 'https://play.google.com/billing',
-  //   data: { sku: 'remove_ads' } }], { total: { label: 'Remover anúncios', amount: { currency: 'BRL', value: '9.90' } } });
-  // const result = await paymentRequest.show();
-  // await result.complete('success');
+// PRODUCT_ID precisa ser IDÊNTICO ao ID do produto criado em
+// Play Console > Monetizar > Produtos no app.
+const REMOVE_ADS_PRODUCT_ID = 'remove_ads';
+const PLAY_BILLING_METHOD = 'https://play.google.com/billing';
+
+let digitalGoodsServicePromise = null;
+
+// Só resolve dentro do app instalado via TWA; em navegador comum retorna null.
+function getDigitalGoods(){
+  if(!digitalGoodsServicePromise){
+    digitalGoodsServicePromise = (window.getDigitalGoodsService
+      ? window.getDigitalGoodsService(PLAY_BILLING_METHOD)
+      : Promise.resolve(null)
+    ).catch(() => null);
+  }
+  return digitalGoodsServicePromise;
+}
+
+// Restaura o status premium a partir do Google Play (cobre reinstalação
+// do app ou limpeza de dados locais, sem depender só do localStorage).
+async function restorePurchase(){
+  const service = await getDigitalGoods();
+  if(!service) return;
+  try{
+    const purchases = await service.listPurchases();
+    const owned = purchases.some(p => p.itemId === REMOVE_ADS_PRODUCT_ID);
+    if(owned && !isPremium){
+      isPremium = true;
+      localStorage.setItem(PREMIUM_KEY, 'true');
+      updatePremiumUI();
+    }
+  }catch(e){
+    console.error('Erro ao restaurar compra', e);
+  }
+}
+
+async function purchasePremium(){
+  const service = await getDigitalGoods();
+  if(!service){
+    showAlert('A remoção de anúncios só está disponível dentro do aplicativo instalado pela Play Store.');
+    return;
+  }
+
+  let priceLabel = 'R$ 4,90';
+  try{
+    const details = await service.getDetails([REMOVE_ADS_PRODUCT_ID]);
+    if(details && details[0] && details[0].price){
+      priceLabel = `${details[0].price.currency} ${details[0].price.value}`;
+    }
+  }catch(e){ /* mantém o preço padrão se a consulta falhar */ }
+
   showConfirm(
-    'Remover anúncios — R$ 4,90',
-    'Pagamento único. Os anúncios serão removidos permanentemente neste dispositivo após a confirmação na Play Store.',
-    () => {
+    `Remover anúncios — ${priceLabel}`,
+    'Pagamento único processado pela Google Play. Os anúncios serão removidos permanentemente neste dispositivo após a confirmação.',
+    async () => {
+      let paymentResponse;
+      try{
+        const request = new PaymentRequest(
+          [{ supportedMethods: PLAY_BILLING_METHOD, data: { sku: REMOVE_ADS_PRODUCT_ID } }],
+          { total: { label: 'Remover anúncios', amount: { currency: 'BRL', value: '4.90' } } }
+        );
+        paymentResponse = await request.show();
+        await paymentResponse.complete('success');
+        // Produto não-consumível (remoção permanente): reconhece em vez de consumir,
+        // senão o Google reembolsa automaticamente após 3 dias sem confirmação.
+        await service.acknowledge(paymentResponse.details.purchaseToken, 'onetime');
+      }catch(err){
+        if(err.name === 'AbortError') return; // usuário cancelou o pagamento
+        console.error('Erro na compra', err);
+        showAlert('Não foi possível concluir a compra agora. Tente novamente.');
+        return;
+      }
+
       isPremium = true;
       localStorage.setItem(PREMIUM_KEY, 'true');
       updatePremiumUI();
@@ -1299,6 +1361,7 @@ $('removaAdsBtn').addEventListener('click', purchasePremium);
 initSimulator();
 loadData();
 updatePremiumUI();
+restorePurchase();
 </script>
 </body>
 </html>
