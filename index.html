@@ -400,84 +400,20 @@ button:active{ transform: scale(0.97); }
 }
 .btn-premium:active{ transform:scale(0.97); }
 
-/* INTERSTICIAL */
-.intersticial-overlay{
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.93);
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 200;
-  padding: 20px;
-}
-.intersticial-overlay.show{ display:flex; }
-.intersticial-box{
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  width: 100%;
-  max-width: 360px;
-  overflow: hidden;
-}
-.intersticial-header{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--line);
-}
-.intersticial-label{
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--muted);
-  font-weight: 700;
-}
-.intersticial-timer{
-  font-size: 12px;
-  font-family: 'JetBrains Mono', monospace;
-  color: var(--muted);
-}
-.intersticial-ad-area{
+/* ANÚNCIO EM CONTEÚDO (dentro do relatório, ao lado de conteúdo real) */
+.incontent-ad{
   background: var(--card-2);
+  border: 1px dashed var(--line);
+  border-radius: 12px;
   min-height: 250px;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   padding: 20px;
-}
-.intersticial-footer{
-  padding: 12px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.btn-close-ad{
-  width: 100%;
-  border: none;
-  border-radius: 10px;
-  padding: 12px;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  font-family:'Manrope', sans-serif;
-  background: var(--card-2);
-  color: var(--text);
-  border: 1px solid var(--line);
-  transition: opacity .15s, transform .1s;
-}
-.btn-close-ad:disabled{ opacity:0.35; cursor:not-allowed; }
-.btn-close-ad:not(:disabled):active{ transform:scale(0.97); }
-.btn-remove-ads-link{
-  text-align: center;
-  font-size: 12px;
-  color: var(--amber);
-  cursor: pointer;
-  padding: 4px;
-  font-weight: 700;
+  margin: 18px 0;
+  color: var(--muted);
+  font-size: 13px;
 }
 
 /* BANNER FIXO (STICKY) */
@@ -510,50 +446,6 @@ button:active{ transform: scale(0.97); }
   padding: 6px 10px;
 }
 
-/* RECOMPENSADO */
-.rewarded-overlay{
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.93);
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 200;
-  padding: 20px;
-}
-.rewarded-overlay.show{ display:flex; }
-.rewarded-box{
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  width: 100%;
-  max-width: 360px;
-  overflow: hidden;
-  text-align: center;
-}
-.rewarded-header{
-  padding: 18px 16px 10px;
-}
-.rewarded-icon{ font-size: 32px; margin-bottom: 8px; }
-.rewarded-title{ font-size: 15px; font-weight: 800; margin-bottom: 6px; }
-.rewarded-desc{ font-size: 12px; color: var(--muted); line-height: 1.5; padding: 0 8px; }
-.rewarded-ad-area{
-  background: var(--card-2);
-  min-height: 220px;
-  margin: 14px 14px 0;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-.rewarded-footer{
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
 </style>
 </head>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -663,6 +555,21 @@ button:active{ transform: scale(0.97); }
       <div class="stat-box"><div class="stat-label">Mês</div><div class="stat-value" id="rsMonth">0</div></div>
     </div>
 
+    <div class="incontent-ad" id="incontentAd">
+      <!--
+        SUBSTITUA pelo bloco do seu AdSense após criar a unidade de anúncio:
+        <ins class="adsbygoogle"
+             style="display:block;width:300px;height:250px"
+             data-ad-client="ca-pub-1830743771456468"
+             data-ad-slot="XXXXXXXXXX"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+      -->
+      <div>
+        <div style="font-size:32px;margin-bottom:8px;">📢</div>
+        <div>Espaço reservado para anúncio<br><small>Configure seu AdSense para exibir aqui</small></div>
+      </div>
+    </div>
+
     <div class="section-label">Participação de cada aparelho</div>
     <div id="barList"></div>
 
@@ -692,66 +599,12 @@ button:active{ transform: scale(0.97); }
       <button class="btn-secondary" id="exportPdfBtn">📄 Compartilhar PDF</button>
       <button class="btn-secondary" id="exportXlsxBtn">📊 Compartilhar Excel</button>
     </div>
-    <div style="font-size:10px; color:var(--muted); text-align:center; margin-top:8px;" id="exportAdNotice">Compartilhamento gratuito mediante anúncio recompensado</div>
   </div>
 
   <div class="footer-note">
     Os dados ficam salvos no seu app, mesmo se você sair e voltar depois.<br>
     Os valores são estimativas com base na potência informada — confira sempre sua conta real.<br>
     <a href="privacy-policy.html" style="color:var(--amber);">Política de Privacidade</a>
-  </div>
-</div>
-
-<!-- INTERSTICIAL -->
-<div class="intersticial-overlay" id="intersticial">
-  <div class="intersticial-box">
-    <div class="intersticial-header">
-      <span class="intersticial-label">Anúncio</span>
-      <span class="intersticial-timer" id="intersticialTimer">Fechar em 5s</span>
-    </div>
-    <div class="intersticial-ad-area">
-      <!--
-        SUBSTITUA pelo bloco do seu AdSense após criar a conta:
-        <ins class="adsbygoogle"
-             style="display:block;width:300px;height:250px"
-             data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-             data-ad-slot="XXXXXXXXXX"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-      -->
-      <div>
-        <div style="font-size:40px;margin-bottom:12px;">📢</div>
-        <div style="color:var(--muted);font-size:13px;line-height:1.5;">Espaço reservado para anúncio<br><small>Configure seu AdSense para exibir aqui</small></div>
-      </div>
-    </div>
-    <div class="intersticial-footer">
-      <button class="btn-close-ad" id="btnCloseAd" disabled>Fechar anúncio</button>
-      <div class="btn-remove-ads-link" id="btnRemoveAdsFromAd">⭐ Remover anúncios por R$ 4,90</div>
-    </div>
-  </div>
-</div>
-
-<!-- RECOMPENSADO -->
-<div class="rewarded-overlay" id="rewarded">
-  <div class="rewarded-box">
-    <div class="rewarded-header">
-      <div class="rewarded-icon">🎁</div>
-      <div class="rewarded-title">Assista para exportar grátis</div>
-      <div class="rewarded-desc">Assista ao anúncio completo para desbloquear a exportação deste relatório.</div>
-    </div>
-    <div class="rewarded-ad-area">
-      <!--
-        SUBSTITUA pelo bloco do seu AdMob Rewarded após criar a unidade:
-        carregar via SDK do AdMob (rewarded ad) e chamar show() aqui
-      -->
-      <div>
-        <div style="font-size:36px;margin-bottom:10px;">📢</div>
-        <div style="color:var(--muted);font-size:12px;line-height:1.5;">Espaço reservado para anúncio recompensado<br><small id="rewardedTimerText">Carregando... 8s</small></div>
-      </div>
-    </div>
-    <div class="rewarded-footer">
-      <button class="btn-close-ad" id="btnClaimReward" disabled>Aguarde...</button>
-      <div class="btn-remove-ads-link" id="btnRemoveAdsFromRewarded">⭐ Remover anúncios por R$ 4,90</div>
-    </div>
   </div>
 </div>
 
@@ -788,73 +641,14 @@ function updatePremiumUI(){
     document.getElementById('premiumBadge').classList.add('show');
     document.getElementById('stickyBanner').classList.remove('show');
     document.getElementById('wrap').classList.remove('has-sticky-banner');
-    document.getElementById('exportAdNotice').style.display = 'none';
+    document.getElementById('incontentAd').style.display = 'none';
   } else {
     document.getElementById('removeAdsBanner').classList.remove('hidden');
     document.getElementById('premiumBadge').classList.remove('show');
     document.getElementById('stickyBanner').classList.add('show');
     document.getElementById('wrap').classList.add('has-sticky-banner');
-    document.getElementById('exportAdNotice').style.display = 'block';
+    document.getElementById('incontentAd').style.display = 'flex';
   }
-}
-
-function showRewardedAd(onReward){
-  if(isPremium){ onReward(); return; }
-  const overlay = document.getElementById('rewarded');
-  const timerText = document.getElementById('rewardedTimerText');
-  const claimBtn = document.getElementById('btnClaimReward');
-  overlay.classList.add('show');
-  claimBtn.disabled = true;
-  claimBtn.textContent = 'Aguarde...';
-  let seconds = 8;
-  timerText.textContent = `Carregando... ${seconds}s`;
-  const interval = setInterval(() => {
-    seconds--;
-    if(seconds <= 0){
-      clearInterval(interval);
-      timerText.textContent = 'Anúncio concluído!';
-      claimBtn.disabled = false;
-      claimBtn.textContent = '🎁 Resgatar e exportar';
-    } else {
-      timerText.textContent = `Carregando... ${seconds}s`;
-    }
-  }, 1000);
-  const claim = () => {
-    clearInterval(interval);
-    overlay.classList.remove('show');
-    claimBtn.removeEventListener('click', claim);
-    onReward();
-  };
-  claimBtn.addEventListener('click', claim);
-}
-
-function showInterstitial(onClose){
-  if(isPremium){ onClose(); return; }
-  const overlay = document.getElementById('intersticial');
-  const timerEl = document.getElementById('intersticialTimer');
-  const closeBtn = document.getElementById('btnCloseAd');
-  overlay.classList.add('show');
-  closeBtn.disabled = true;
-  closeBtn.textContent = 'Fechar anúncio';
-  let seconds = 5;
-  timerEl.textContent = `Fechar em ${seconds}s`;
-  const interval = setInterval(() => {
-    seconds--;
-    if(seconds <= 0){
-      clearInterval(interval);
-      timerEl.textContent = '';
-      closeBtn.disabled = false;
-    } else {
-      timerEl.textContent = `Fechar em ${seconds}s`;
-    }
-  }, 1000);
-  const close = () => {
-    clearInterval(interval);
-    overlay.classList.remove('show');
-    closeBtn.removeEventListener('click', close);
-    onClose();
-  };
-  closeBtn.addEventListener('click', close);
 }
 
 function purchasePremium(){
@@ -871,7 +665,6 @@ function purchasePremium(){
       isPremium = true;
       localStorage.setItem(PREMIUM_KEY, 'true');
       updatePremiumUI();
-      document.getElementById('intersticial').classList.remove('show');
       showAlert('✓ Obrigado! Anúncios removidos. Aproveite a versão Premium!');
     }
   );
@@ -1223,7 +1016,7 @@ $('reportBtn').addEventListener('click', () => {
     showAlert('Cadastre pelo menos um aparelho antes de gerar o relatório.');
     return;
   }
-  showInterstitial(() => generateReport());
+  generateReport();
 });
 
 function generateReport(){
@@ -1499,14 +1292,9 @@ function exportXLSX(){
   }
 }
 
-$('exportPdfBtn').addEventListener('click', () => showRewardedAd(exportPDF));
-$('exportXlsxBtn').addEventListener('click', () => showRewardedAd(exportXLSX));
+$('exportPdfBtn').addEventListener('click', exportPDF);
+$('exportXlsxBtn').addEventListener('click', exportXLSX);
 $('removaAdsBtn').addEventListener('click', purchasePremium);
-$('btnRemoveAdsFromAd').addEventListener('click', purchasePremium);
-$('btnRemoveAdsFromRewarded').addEventListener('click', () => {
-  document.getElementById('rewarded').classList.remove('show');
-  purchasePremium();
-});
 
 initSimulator();
 loadData();
