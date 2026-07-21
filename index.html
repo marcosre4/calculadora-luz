@@ -354,6 +354,61 @@ button:active{ transform: scale(0.97); }
 
 .footer-note{ text-align:center; font-size: 11px; color: #56635C; margin-top: 24px; line-height:1.6; }
 
+/* CONTEÚDO INFORMATIVO */
+.article-card{
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+.article-card h2{
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0 0 12px;
+  letter-spacing: -0.01em;
+}
+.article-card h3{
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--amber);
+  margin: 16px 0 6px;
+}
+.article-card p{
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text);
+  margin: 0 0 12px;
+}
+.article-card ul{
+  margin: 0 0 12px;
+  padding-left: 18px;
+}
+.article-card li{
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.article-card li b{ color: var(--amber); }
+.article-card .formula{
+  display: block;
+  background: var(--card-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--amber);
+  margin: 0 0 12px;
+  text-align: center;
+}
+.faq-item{ border-top: 1px solid var(--line); padding: 12px 0; }
+.faq-item:first-of-type{ border-top: none; padding-top: 0; }
+.faq-q{ font-size: 14px; font-weight: 700; color: var(--text); margin: 0 0 6px; }
+.faq-a{ font-size: 13px; line-height: 1.6; color: var(--muted); margin: 0; }
+
 /* PREMIUM BADGE */
 .premium-badge{
   display:none;
@@ -598,6 +653,59 @@ button:active{ transform: scale(0.97); }
     <div class="btns" style="margin-top:18px;">
       <button class="btn-secondary" id="exportPdfBtn">📄 Compartilhar PDF</button>
       <button class="btn-secondary" id="exportXlsxBtn">📊 Compartilhar Excel</button>
+    </div>
+  </div>
+
+  <!-- CONTEÚDO INFORMATIVO -->
+  <div class="article-card">
+    <h2>Como funciona a sua conta de luz</h2>
+    <p>A conta de luz é calculada a partir da quantidade de energia que você consome, medida em quilowatt-hora (kWh). Cada aparelho elétrico tem uma potência, expressa em watts (W), que indica quanta energia ele usa enquanto está ligado. Quanto maior a potência e mais tempo o aparelho fica ligado, maior o consumo.</p>
+    <p>Para estimar o gasto de um aparelho, multiplicamos a potência dele pelo tempo de uso e dividimos por 1000 para converter em kWh:</p>
+    <span class="formula">consumo (kWh) = potência (W) × horas ÷ 1000</span>
+    <p>Por exemplo, uma lâmpada de 100 W ligada por 5 horas consome 0,5 kWh por dia. No fim do mês, a distribuidora soma o consumo de toda a casa e multiplica pelo valor da tarifa (o preço de cada kWh na sua região) para chegar ao total da fatura.</p>
+    <p>Além do consumo, a conta pode incluir impostos (como ICMS, PIS e COFINS), a taxa de iluminação pública e as bandeiras tarifárias — verde, amarela ou vermelha — que encarecem a energia em períodos de estiagem nos reservatórios das hidrelétricas.</p>
+  </div>
+
+  <div class="article-card">
+    <h2>Como encontrar o valor do kWh na sua conta</h2>
+    <p>Para que a estimativa fique próxima da realidade, é importante informar quanto custa cada kWh na sua região. Esse valor muda conforme a distribuidora e o estado. Você pode descobri-lo de duas formas:</p>
+    <ul>
+      <li><b>Na fatura de energia:</b> procure por "Tarifa" ou "Preço unitário" (R$/kWh) na parte detalhada da conta.</li>
+      <li><b>Dividindo o total pela quantidade:</b> divida o valor total da conta pelo total de kWh consumidos no mês — ambos aparecem na fatura.</li>
+    </ul>
+    <p>No Brasil, o valor médio costuma ficar entre R$ 0,70 e R$ 1,10 por kWh, mas pode ser maior dependendo da bandeira tarifária vigente e dos impostos do seu estado. Quanto mais preciso o valor informado, mais confiável fica o resultado.</p>
+  </div>
+
+  <div class="article-card">
+    <h2>Dicas para economizar energia</h2>
+    <p>Pequenas mudanças de hábito reduzem bastante a conta de luz. Veja algumas das mais eficazes:</p>
+    <h3>Chuveiro elétrico</h3>
+    <p>É um dos maiores vilões da conta. Banhos mais curtos e usar a posição "verão" (menos potência) quando o clima permite fazem grande diferença no fim do mês.</p>
+    <h3>Geladeira e freezer</h3>
+    <p>Mantenha a borracha da porta bem vedada, evite abrir com frequência e nunca guarde alimentos quentes. Não é seguro desligá-la, mas mantê-la eficiente ajuda a reduzir o consumo constante.</p>
+    <h3>Ar-condicionado</h3>
+    <p>Cada grau a menos na temperatura aumenta o consumo. Mantenha em torno de 23°C e limpe os filtros regularmente para o aparelho não trabalhar mais do que o necessário.</p>
+    <h3>Iluminação e aparelhos em standby</h3>
+    <p>Troque lâmpadas antigas por LED, que consomem até 80% menos e duram muito mais. E lembre-se: TVs, videogames e carregadores continuam consumindo energia mesmo em espera — tire da tomada o que não estiver em uso.</p>
+  </div>
+
+  <div class="article-card">
+    <h2>Perguntas frequentes</h2>
+    <div class="faq-item">
+      <p class="faq-q">Os valores desta calculadora são exatos?</p>
+      <p class="faq-a">Não. São estimativas baseadas na potência e no tempo de uso que você informa. O consumo real pode variar conforme o modelo do aparelho, sua idade e as condições de uso. Sempre confira sua fatura real.</p>
+    </div>
+    <div class="faq-item">
+      <p class="faq-q">Preciso de internet para usar o aplicativo?</p>
+      <p class="faq-a">Não. Depois de aberto, o app funciona offline e seus dados ficam salvos no próprio dispositivo.</p>
+    </div>
+    <div class="faq-item">
+      <p class="faq-q">Onde ficam salvos os aparelhos que eu cadastro?</p>
+      <p class="faq-a">Exclusivamente no seu aparelho, no armazenamento local. Nenhuma informação é enviada para servidores.</p>
+    </div>
+    <div class="faq-item">
+      <p class="faq-q">Como descubro a potência dos meus aparelhos?</p>
+      <p class="faq-a">A potência (em watts) costuma estar na etiqueta do aparelho, no manual ou na parte traseira. Basta informar esse valor ao cadastrar cada item.</p>
     </div>
   </div>
 
