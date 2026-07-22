@@ -821,14 +821,19 @@ async function purchasePremium(){
           { total: { label: 'Remover anúncios', amount: { currency: 'BRL', value: '4.90' } } }
         );
         paymentResponse = await request.show();
+        // Na Digital Goods API v2.1 (Chrome 96+) o próprio complete('success')
+        // reconhece a compra, e acknowledge() deixou de existir. Produto não-consumível:
+        // nunca chamar consume(), senão o usuário perderia o acesso já pago.
         await paymentResponse.complete('success');
-        // Produto não-consumível (remoção permanente): reconhece em vez de consumir,
-        // senão o Google reembolsa automaticamente após 3 dias sem confirmação.
-        await service.acknowledge(paymentResponse.details.purchaseToken, 'onetime');
+        if(typeof service.acknowledge === 'function'){
+          // Fallback para a API v1 (Chrome 88-95), onde reconhecer ainda é obrigatório
+          // — sem isso o Google reembolsa automaticamente após 3 dias.
+          await service.acknowledge(paymentResponse.details.purchaseToken, 'onetime');
+        }
       }catch(err){
         if(err.name === 'AbortError') return; // usuário cancelou o pagamento
         console.error('Erro na compra', err);
-        showAlert('Não foi possível concluir a compra agora. Tente novamente.');
+        showAlert(`Não foi possível concluir a compra agora. (${err.name || 'erro'}: ${err.message || 'sem detalhes'})`);
         return;
       }
 
