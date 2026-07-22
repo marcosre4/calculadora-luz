@@ -349,7 +349,7 @@ button:active{ transform: scale(0.97); }
   width: 100%;
 }
 .modal-title{ font-size: 16px; font-weight: 800; margin: 0 0 8px; }
-.modal-text{ font-size: 13px; color: var(--muted); line-height: 1.5; margin: 0 0 18px; }
+.modal-text{ font-size: 13px; color: var(--muted); line-height: 1.5; margin: 0 0 18px; word-break: break-word; max-height: 45vh; overflow-y: auto; -webkit-user-select: text; user-select: text; }
 .modal-btns{ display:flex; gap: 10px; }
 
 .footer-note{ text-align:center; font-size: 11px; color: #56635C; margin-top: 24px; line-height:1.6; }
@@ -803,12 +803,27 @@ async function purchasePremium(){
   }
 
   let priceLabel = 'R$ 4,90';
+  // Diagnóstico temporário: registra o resultado das consultas ao Play para
+  // exibir junto do erro caso a compra falhe.
+  let diag = [];
   try{
     const details = await service.getDetails([REMOVE_ADS_PRODUCT_ID]);
-    if(details && details[0] && details[0].price){
-      priceLabel = `${details[0].price.currency} ${details[0].price.value}`;
+    diag.push(`getDetails=${Array.isArray(details) ? details.length + ' item(ns)' : typeof details}`);
+    if(details && details[0]){
+      diag.push(`id=${details[0].itemId}`);
+      if(details[0].price){
+        priceLabel = `${details[0].price.currency} ${details[0].price.value}`;
+      }
     }
-  }catch(e){ /* mantém o preço padrão se a consulta falhar */ }
+  }catch(e){
+    diag.push(`getDetails ERRO ${e.name}: ${e.message}`);
+  }
+  try{
+    const owned = await service.listPurchases();
+    diag.push(`listPurchases=${Array.isArray(owned) ? owned.length : typeof owned}`);
+  }catch(e){
+    diag.push(`listPurchases ERRO ${e.name}: ${e.message}`);
+  }
 
   showConfirm(
     `Remover anúncios — ${priceLabel}`,
@@ -816,6 +831,19 @@ async function purchasePremium(){
     async () => {
       let paymentResponse;
       try{
+        // Diagnóstico: distingue falha do Chrome em resolver o método de pagamento
+        // (canMakePayment=false) de falha ao consultar o produto no Play. Roda numa
+        // instância descartável — um PaymentRequest só aceita show() uma vez, então
+        // sondar o objeto real inutilizaria a compra.
+        try{
+          const probe = new PaymentRequest(
+            [{ supportedMethods: PLAY_BILLING_METHOD, data: { sku: REMOVE_ADS_PRODUCT_ID } }],
+            { total: { label: 'probe', amount: { currency: 'BRL', value: '4.90' } } }
+          );
+          diag.push(`canMakePayment=${await probe.canMakePayment()}`);
+        }catch(e){
+          diag.push(`canMakePayment ERRO ${e.name}: ${e.message}`);
+        }
         const request = new PaymentRequest(
           [{ supportedMethods: PLAY_BILLING_METHOD, data: { sku: REMOVE_ADS_PRODUCT_ID } }],
           { total: { label: 'Remover anúncios', amount: { currency: 'BRL', value: '4.90' } } }
@@ -832,8 +860,8 @@ async function purchasePremium(){
         }
       }catch(err){
         if(err.name === 'AbortError') return; // usuário cancelou o pagamento
-        console.error('Erro na compra', err);
-        showAlert(`Não foi possível concluir a compra agora. (${err.name || 'erro'}: ${err.message || 'sem detalhes'})`);
+        console.error('Erro na compra', err, diag);
+        showAlert(`Falha na compra — ${err.name || 'erro'}: ${err.message || 'sem detalhes'} || DIAG: ${diag.join(' ; ')} || Chrome: ${(navigator.userAgent.match(/Chrome\/[\d.]+/) || ['?'])[0]}`);
         return;
       }
 
