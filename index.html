@@ -711,7 +711,10 @@ button:active{ transform: scale(0.97); }
 
   <div class="footer-note">
     Os dados ficam salvos no seu app, mesmo se você sair e voltar depois.<br>
-    Os valores são estimativas com base na potência informada — confira sempre sua conta real.<br>
+    Os valores são estimativas com base na potência informada — confira sempre sua conta real.<br><br>
+    <a href="como-funciona-conta-de-luz.html" style="color:var(--amber);">Guia da conta de luz</a> ·
+    <a href="dicas-economia-energia.html" style="color:var(--amber);">Dicas de economia</a> ·
+    <a href="sobre.html" style="color:var(--amber);">Sobre o app</a> ·
     <a href="privacy-policy.html" style="color:var(--amber);">Política de Privacidade</a>
   </div>
 </div>
@@ -743,19 +746,29 @@ button:active{ transform: scale(0.97); }
 const PREMIUM_KEY = 'premium_v1';
 let isPremium = localStorage.getItem(PREMIUM_KEY) === 'true';
 
+// Mude para true SOMENTE quando a conta AdSense for aprovada e os blocos
+// reais de anúncio forem inseridos. Enquanto false, nenhum espaço de
+// anúncio (nem placeholder) é exibido — exigência da política do AdSense
+// de não haver slots de anúncio em telas sem conteúdo do editor.
+const ADS_ENABLED = false;
+
 function updatePremiumUI(){
+  const showAds = ADS_ENABLED && !isPremium;
   if(isPremium){
     document.getElementById('removeAdsBanner').classList.add('hidden');
     document.getElementById('premiumBadge').classList.add('show');
-    document.getElementById('stickyBanner').classList.remove('show');
-    document.getElementById('wrap').classList.remove('has-sticky-banner');
-    document.getElementById('incontentAd').style.display = 'none';
   } else {
     document.getElementById('removeAdsBanner').classList.remove('hidden');
     document.getElementById('premiumBadge').classList.remove('show');
+  }
+  if(showAds){
     document.getElementById('stickyBanner').classList.add('show');
     document.getElementById('wrap').classList.add('has-sticky-banner');
     document.getElementById('incontentAd').style.display = 'flex';
+  } else {
+    document.getElementById('stickyBanner').classList.remove('show');
+    document.getElementById('wrap').classList.remove('has-sticky-banner');
+    document.getElementById('incontentAd').style.display = 'none';
   }
 }
 
