@@ -47,9 +47,6 @@ body{
   margin: 0 auto;
   padding: calc(20px + env(safe-area-inset-top)) 18px calc(40px + env(safe-area-inset-bottom));
 }
-.wrap.has-sticky-banner{
-  padding-bottom: calc(90px + env(safe-area-inset-bottom));
-}
 
 /* HEADER / SIGNATURE DIAL */
 .header{
@@ -455,51 +452,9 @@ button:active{ transform: scale(0.97); }
 }
 .btn-premium:active{ transform:scale(0.97); }
 
-/* ANÚNCIO EM CONTEÚDO (dentro do relatório, ao lado de conteúdo real) */
-.incontent-ad{
-  background: var(--card-2);
-  border: 1px dashed var(--line);
-  border-radius: 12px;
-  min-height: 250px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 20px;
-  margin: 18px 0;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-/* BANNER FIXO (STICKY) */
-.sticky-banner{
-  position: fixed;
-  left: 0; right: 0; bottom: 0;
-  z-index: 90;
-  background: var(--card);
-  border-top: 1px solid var(--line);
-  padding: 8px calc(12px + env(safe-area-inset-left)) calc(8px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-right));
-  display: none;
-  align-items: center;
-  justify-content: center;
-}
-.sticky-banner.show{ display:flex; }
-.sticky-banner-inner{
-  width: 100%;
-  max-width: 428px;
-  min-height: 50px;
-  background: var(--card-2);
-  border: 1px dashed var(--line);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  color: var(--muted);
-  font-size: 11px;
-  text-align: center;
-  padding: 6px 10px;
-}
+/* NOTA DO LIMITE GRATUITO */
+.free-limit-note{ text-align:center; font-size: 11px; color: var(--muted); margin-top: 10px; }
+.free-limit-note:empty{ display:none; }
 
 </style>
 </head>
@@ -515,10 +470,10 @@ button:active{ transform: scale(0.97); }
     <div class="premium-badge" id="premiumBadge">✓ Versão Premium</div>
   </div>
 
-  <!-- BANNER REMOVER ANÚNCIOS -->
+  <!-- BANNER PREMIUM -->
   <div class="remove-ads-banner" id="removeAdsBanner">
-    <div class="remove-ads-text"><b>Contém anúncios</b><br>Anúncios aparecem no aplicativo</div>
-    <button class="btn-premium" id="removaAdsBtn">⭐ Remover R$ 4,90</button>
+    <div class="remove-ads-text"><b>Versão gratuita</b><br>Até 5 aparelhos · exportação no Premium</div>
+    <button class="btn-premium" id="removaAdsBtn">⭐ Premium R$ 4,90</button>
   </div>
 
   <!-- TARIFA -->
@@ -587,6 +542,7 @@ button:active{ transform: scale(0.97); }
     <div id="applianceList">
       <div class="empty-state">Nenhum aparelho cadastrado ainda. Preencha o formulário acima e clique em "Salvar aparelho".</div>
     </div>
+    <div class="free-limit-note" id="freeLimitNote"></div>
     <div class="btns" style="margin-top:14px;">
       <button class="btn-ghost" id="clearBtn">Limpar todos os aparelhos</button>
     </div>
@@ -608,21 +564,6 @@ button:active{ transform: scale(0.97); }
       <div class="stat-box"><div class="stat-label">Dia</div><div class="stat-value" id="rsDay">0</div></div>
       <div class="stat-box"><div class="stat-label">Semana</div><div class="stat-value" id="rsWeek">0</div></div>
       <div class="stat-box"><div class="stat-label">Mês</div><div class="stat-value" id="rsMonth">0</div></div>
-    </div>
-
-    <div class="incontent-ad" id="incontentAd">
-      <!--
-        SUBSTITUA pelo bloco do seu AdSense após criar a unidade de anúncio:
-        <ins class="adsbygoogle"
-             style="display:block;width:300px;height:250px"
-             data-ad-client="ca-pub-1830743771456468"
-             data-ad-slot="XXXXXXXXXX"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-      -->
-      <div>
-        <div style="font-size:32px;margin-bottom:8px;">📢</div>
-        <div>Espaço reservado para anúncio<br><small>Configure seu AdSense para exibir aqui</small></div>
-      </div>
     </div>
 
     <div class="section-label">Participação de cada aparelho</div>
@@ -719,17 +660,6 @@ button:active{ transform: scale(0.97); }
   </div>
 </div>
 
-<!-- BANNER FIXO -->
-<div class="sticky-banner" id="stickyBanner">
-  <div class="sticky-banner-inner">
-    <!--
-      SUBSTITUA pelo bloco do seu AdMob Banner após criar a unidade:
-      <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX"></ins>
-    -->
-    Espaço reservado — banner de anúncio (320x50)
-  </div>
-</div>
-
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal-box">
     <div class="modal-title" id="modalTitle">Confirmar ação</div>
@@ -746,14 +676,12 @@ button:active{ transform: scale(0.97); }
 const PREMIUM_KEY = 'premium_v1';
 let isPremium = localStorage.getItem(PREMIUM_KEY) === 'true';
 
-// Mude para true SOMENTE quando a conta AdSense for aprovada e os blocos
-// reais de anúncio forem inseridos. Enquanto false, nenhum espaço de
-// anúncio (nem placeholder) é exibido — exigência da política do AdSense
-// de não haver slots de anúncio em telas sem conteúdo do editor.
-const ADS_ENABLED = false;
+// Modelo de monetização: app gratuito limitado a FREE_APPLIANCE_LIMIT
+// aparelhos; a compra única "Premium" desbloqueia aparelhos ilimitados
+// e a exportação em PDF/Excel. O app não exibe anúncios.
+const FREE_APPLIANCE_LIMIT = 5;
 
 function updatePremiumUI(){
-  const showAds = ADS_ENABLED && !isPremium;
   if(isPremium){
     document.getElementById('removeAdsBanner').classList.add('hidden');
     document.getElementById('premiumBadge').classList.add('show');
@@ -761,15 +689,16 @@ function updatePremiumUI(){
     document.getElementById('removeAdsBanner').classList.remove('hidden');
     document.getElementById('premiumBadge').classList.remove('show');
   }
-  if(showAds){
-    document.getElementById('stickyBanner').classList.add('show');
-    document.getElementById('wrap').classList.add('has-sticky-banner');
-    document.getElementById('incontentAd').style.display = 'flex';
-  } else {
-    document.getElementById('stickyBanner').classList.remove('show');
-    document.getElementById('wrap').classList.remove('has-sticky-banner');
-    document.getElementById('incontentAd').style.display = 'none';
-  }
+  updateFreeLimitNote();
+}
+
+// Abre a oferta do Premium explicando qual limite foi atingido.
+function offerPremium(reason){
+  showConfirm(
+    '⭐ Recurso Premium',
+    `${reason} Por um pagamento único de R$ 4,90, o Premium desbloqueia aparelhos ilimitados e a exportação em PDF e Excel.`,
+    () => purchasePremium()
+  );
 }
 
 // PRODUCT_ID precisa ser IDÊNTICO ao ID do produto criado em
@@ -811,55 +740,27 @@ async function restorePurchase(){
 async function purchasePremium(){
   const service = await getDigitalGoods();
   if(!service){
-    showAlert('A remoção de anúncios só está disponível dentro do aplicativo instalado pela Play Store.');
+    showAlert('O Premium só está disponível dentro do aplicativo instalado pela Play Store.');
     return;
   }
 
   let priceLabel = 'R$ 4,90';
-  // Diagnóstico temporário: registra o resultado das consultas ao Play para
-  // exibir junto do erro caso a compra falhe.
-  let diag = [];
   try{
     const details = await service.getDetails([REMOVE_ADS_PRODUCT_ID]);
-    diag.push(`getDetails=${Array.isArray(details) ? details.length + ' item(ns)' : typeof details}`);
-    if(details && details[0]){
-      diag.push(`id=${details[0].itemId}`);
-      if(details[0].price){
-        priceLabel = `${details[0].price.currency} ${details[0].price.value}`;
-      }
+    if(details && details[0] && details[0].price){
+      priceLabel = `${details[0].price.currency} ${details[0].price.value}`;
     }
-  }catch(e){
-    diag.push(`getDetails ERRO ${e.name}: ${e.message}`);
-  }
-  try{
-    const owned = await service.listPurchases();
-    diag.push(`listPurchases=${Array.isArray(owned) ? owned.length : typeof owned}`);
-  }catch(e){
-    diag.push(`listPurchases ERRO ${e.name}: ${e.message}`);
-  }
+  }catch(e){ /* mantém o preço padrão se a consulta falhar */ }
 
   showConfirm(
-    `Remover anúncios — ${priceLabel}`,
-    'Pagamento único processado pela Google Play. Os anúncios serão removidos permanentemente neste dispositivo após a confirmação.',
+    `⭐ Premium — ${priceLabel}`,
+    'Pagamento único processado pela Google Play. Desbloqueia aparelhos ilimitados e a exportação em PDF e Excel, permanentemente.',
     async () => {
       let paymentResponse;
       try{
-        // Diagnóstico: distingue falha do Chrome em resolver o método de pagamento
-        // (canMakePayment=false) de falha ao consultar o produto no Play. Roda numa
-        // instância descartável — um PaymentRequest só aceita show() uma vez, então
-        // sondar o objeto real inutilizaria a compra.
-        try{
-          const probe = new PaymentRequest(
-            [{ supportedMethods: PLAY_BILLING_METHOD, data: { sku: REMOVE_ADS_PRODUCT_ID } }],
-            { total: { label: 'probe', amount: { currency: 'BRL', value: '4.90' } } }
-          );
-          diag.push(`canMakePayment=${await probe.canMakePayment()}`);
-        }catch(e){
-          diag.push(`canMakePayment ERRO ${e.name}: ${e.message}`);
-        }
         const request = new PaymentRequest(
           [{ supportedMethods: PLAY_BILLING_METHOD, data: { sku: REMOVE_ADS_PRODUCT_ID } }],
-          { total: { label: 'Remover anúncios', amount: { currency: 'BRL', value: '4.90' } } }
+          { total: { label: 'Premium', amount: { currency: 'BRL', value: '4.90' } } }
         );
         paymentResponse = await request.show();
         // Na Digital Goods API v2.1 (Chrome 96+) o próprio complete('success')
@@ -873,15 +774,15 @@ async function purchasePremium(){
         }
       }catch(err){
         if(err.name === 'AbortError') return; // usuário cancelou o pagamento
-        console.error('Erro na compra', err, diag);
-        showAlert(`Falha na compra — ${err.name || 'erro'}: ${err.message || 'sem detalhes'} || DIAG: ${diag.join(' ; ')} || Chrome: ${(navigator.userAgent.match(/Chrome\/[\d.]+/) || ['?'])[0]}`);
+        console.error('Erro na compra', err);
+        showAlert(`Não foi possível concluir a compra agora (${err.name}: ${err.message}). Tente novamente.`);
         return;
       }
 
       isPremium = true;
       localStorage.setItem(PREMIUM_KEY, 'true');
       updatePremiumUI();
-      showAlert('✓ Obrigado! Anúncios removidos. Aproveite a versão Premium!');
+      showAlert('✓ Obrigado! Premium ativado: aparelhos ilimitados e exportação liberada.');
     }
   );
 }
@@ -1005,8 +906,15 @@ function formatDays(a){
   return `${daysPerMonthOf(a)} dias/mês`;
 }
 
+function updateFreeLimitNote(){
+  const el = $('freeLimitNote');
+  if(!el) return;
+  el.textContent = isPremium ? '' : `${appliances.length}/${FREE_APPLIANCE_LIMIT} aparelhos na versão gratuita`;
+}
+
 function renderList(){
   const list = $('applianceList');
+  updateFreeLimitNote();
   if(appliances.length === 0){
     list.innerHTML = '<div class="empty-state">Nenhum aparelho cadastrado ainda. Preencha o formulário acima e clique em "Salvar aparelho".</div>';
     return;
@@ -1138,6 +1046,10 @@ function updateSim(){
 
 
 $('saveBtn').addEventListener('click', async () => {
+  if(editIndex === null && !isPremium && appliances.length >= FREE_APPLIANCE_LIMIT){
+    offerPremium(`A versão gratuita permite cadastrar até ${FREE_APPLIANCE_LIMIT} aparelhos.`);
+    return;
+  }
   const name = $('name').value.trim();
   const category = $('category').value;
   const power = parseFloat($('power').value);
@@ -1508,8 +1420,14 @@ function exportXLSX(){
   }
 }
 
-$('exportPdfBtn').addEventListener('click', exportPDF);
-$('exportXlsxBtn').addEventListener('click', exportXLSX);
+$('exportPdfBtn').addEventListener('click', () => {
+  if(!isPremium){ offerPremium('A exportação em PDF é um recurso Premium.'); return; }
+  exportPDF();
+});
+$('exportXlsxBtn').addEventListener('click', () => {
+  if(!isPremium){ offerPremium('A exportação em Excel é um recurso Premium.'); return; }
+  exportXLSX();
+});
 $('removaAdsBtn').addEventListener('click', purchasePremium);
 
 initSimulator();
