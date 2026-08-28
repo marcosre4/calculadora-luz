@@ -732,9 +732,11 @@ async function purchasePremium(){
           await service.acknowledge(paymentResponse.details.purchaseToken, 'onetime');
         }
       }catch(err){
-        if(err.name === 'AbortError') return; // usuário cancelou o pagamento
+        // AbortError chega tanto quando o usuário cancela quanto quando o
+        // sistema interrompe (ex.: oferta ainda não propagada no Google Play).
+        // Como os dois casos são indistinguíveis, nunca falhar em silêncio.
         console.error('Erro na compra', err);
-        showAlert(`Não foi possível concluir a compra agora (${err.name}: ${err.message}). Tente novamente.`);
+        showAlert(`A compra não foi concluída. Se você não cancelou, tente de novo em alguns minutos. (${err.name}: ${err.message})`);
         return;
       }
 
