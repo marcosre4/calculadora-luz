@@ -640,11 +640,14 @@ function offerPremium(reason){
   );
 }
 
-// PREMIUM_PRODUCT_ID precisa ser IDÊNTICO ao ID do produto criado em
+// Identificadores candidatos do produto Premium em
 // Play Console > Monetize with Play > In-app products > One-time products.
-const PREMIUM_PRODUCT_ID = 'premium';
-// ID do produto anterior, excluído do Play Console. Um ID excluído não pode
-// ser recriado, por isso o produto novo tem outro nome. Este continua sendo
+// São consultados em conjunto: o Google devolve só o que existe, e a compra
+// usa o itemId confirmado por ele. Assim o app não quebra se o produto for
+// recriado com outro ID no futuro — basta acrescentar o novo à lista.
+const PREMIUM_PRODUCT_IDS = ['1', 'premium'];
+// ID do produto original, excluído do Play Console. Um ID excluído não pode
+// ser recriado, por isso o produto atual tem outro identificador. Este segue
 // reconhecido APENAS na restauração, para que quem comprou antes da exclusão
 // não perca o acesso já pago.
 const LEGACY_PRODUCT_ID = 'remove_ads';
@@ -670,7 +673,7 @@ async function restorePurchase(){
   if(!service) return;
   try{
     const purchases = await service.listPurchases();
-    const owned = purchases.some(p => p.itemId === PREMIUM_PRODUCT_ID || p.itemId === LEGACY_PRODUCT_ID);
+    const owned = purchases.some(p => PREMIUM_PRODUCT_IDS.includes(p.itemId) || p.itemId === LEGACY_PRODUCT_ID);
     if(owned && !isPremium){
       isPremium = true;
       localStorage.setItem(PREMIUM_KEY, 'true');
@@ -688,13 +691,25 @@ async function purchasePremium(){
     return;
   }
 
+  // Descobre com o Google qual identificador existe de fato, em vez de assumir.
+  let productId = null;
   let priceLabel = 'R$ 4,90';
   try{
-    const details = await service.getDetails([PREMIUM_PRODUCT_ID]);
-    if(details && details[0] && details[0].price){
-      priceLabel = `${details[0].price.currency} ${details[0].price.value}`;
+    const details = await service.getDetails(PREMIUM_PRODUCT_IDS);
+    if(details && details[0]){
+      productId = details[0].itemId;
+      if(details[0].price){
+        priceLabel = `${details[0].price.currency} ${details[0].price.value}`;
+      }
     }
-  }catch(e){ /* mantém o preço padrão se a consulta falhar */ }
+  }catch(e){
+    console.error('Erro ao consultar o produto', e);
+  }
+
+  if(!productId){
+    showAlert('O Premium está indisponível no momento. Tente novamente mais tarde.');
+    return;
+  }
 
   showConfirm(
     `⭐ Premium — ${priceLabel}`,
@@ -703,7 +718,7 @@ async function purchasePremium(){
       let paymentResponse;
       try{
         const request = new PaymentRequest(
-          [{ supportedMethods: PLAY_BILLING_METHOD, data: { sku: PREMIUM_PRODUCT_ID } }],
+          [{ supportedMethods: PLAY_BILLING_METHOD, data: { sku: productId } }],
           { total: { label: 'Premium', amount: { currency: 'BRL', value: '4.90' } } }
         );
         paymentResponse = await request.show();
