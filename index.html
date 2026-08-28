@@ -640,9 +640,14 @@ function offerPremium(reason){
   );
 }
 
-// PRODUCT_ID precisa ser IDÊNTICO ao ID do produto criado em
-// Play Console > Monetizar > Produtos no app.
-const REMOVE_ADS_PRODUCT_ID = 'remove_ads';
+// PREMIUM_PRODUCT_ID precisa ser IDÊNTICO ao ID do produto criado em
+// Play Console > Monetize with Play > In-app products > One-time products.
+const PREMIUM_PRODUCT_ID = 'premium';
+// ID do produto anterior, excluído do Play Console. Um ID excluído não pode
+// ser recriado, por isso o produto novo tem outro nome. Este continua sendo
+// reconhecido APENAS na restauração, para que quem comprou antes da exclusão
+// não perca o acesso já pago.
+const LEGACY_PRODUCT_ID = 'remove_ads';
 const PLAY_BILLING_METHOD = 'https://play.google.com/billing';
 
 let digitalGoodsServicePromise = null;
@@ -665,7 +670,7 @@ async function restorePurchase(){
   if(!service) return;
   try{
     const purchases = await service.listPurchases();
-    const owned = purchases.some(p => p.itemId === REMOVE_ADS_PRODUCT_ID);
+    const owned = purchases.some(p => p.itemId === PREMIUM_PRODUCT_ID || p.itemId === LEGACY_PRODUCT_ID);
     if(owned && !isPremium){
       isPremium = true;
       localStorage.setItem(PREMIUM_KEY, 'true');
@@ -679,34 +684,17 @@ async function restorePurchase(){
 async function purchasePremium(){
   const service = await getDigitalGoods();
   if(!service){
-    showAlert(`O Premium só está disponível dentro do aplicativo instalado pela Play Store. [DIAG: getDigitalGoodsService=${typeof window.getDigitalGoodsService} ; Chrome ${(navigator.userAgent.match(/Chrome\/[\d.]+/) || ['?'])[0]}]`);
+    showAlert('O Premium só está disponível dentro do aplicativo instalado pela Play Store.');
     return;
   }
 
   let priceLabel = 'R$ 4,90';
-  // DIAGNÓSTICO TEMPORÁRIO — remover quando a causa da falha for isolada.
-  const diag = [];
   try{
-    const details = await service.getDetails([REMOVE_ADS_PRODUCT_ID]);
-    diag.push(`getDetails=${Array.isArray(details) ? details.length : typeof details}`);
-    if(details && details[0]){
-      diag.push(`id=${details[0].itemId}`);
-      if(details[0].price){
-        priceLabel = `${details[0].price.currency} ${details[0].price.value}`;
-        diag.push(`preco=${details[0].price.currency} ${details[0].price.value}`);
-      } else {
-        diag.push('SEM preco');
-      }
+    const details = await service.getDetails([PREMIUM_PRODUCT_ID]);
+    if(details && details[0] && details[0].price){
+      priceLabel = `${details[0].price.currency} ${details[0].price.value}`;
     }
-  }catch(e){
-    diag.push(`getDetails ERRO ${e.name}: ${e.message}`);
-  }
-  try{
-    const owned = await service.listPurchases();
-    diag.push(`listPurchases=${Array.isArray(owned) ? owned.length : typeof owned}`);
-  }catch(e){
-    diag.push(`listPurchases ERRO ${e.name}: ${e.message}`);
-  }
+  }catch(e){ /* mantém o preço padrão se a consulta falhar */ }
 
   showConfirm(
     `⭐ Premium — ${priceLabel}`,
@@ -714,23 +702,11 @@ async function purchasePremium(){
     async () => {
       let paymentResponse;
       try{
-        // Sonda numa instância descartável: um PaymentRequest só aceita show()
-        // uma vez, então sondar o objeto real inutilizaria a compra.
-        try{
-          const probe = new PaymentRequest(
-            [{ supportedMethods: PLAY_BILLING_METHOD, data: { sku: REMOVE_ADS_PRODUCT_ID } }],
-            { total: { label: 'probe', amount: { currency: 'BRL', value: '4.90' } } }
-          );
-          diag.push(`canMakePayment=${await probe.canMakePayment()}`);
-        }catch(e){
-          diag.push(`canMakePayment ERRO ${e.name}: ${e.message}`);
-        }
         const request = new PaymentRequest(
-          [{ supportedMethods: PLAY_BILLING_METHOD, data: { sku: REMOVE_ADS_PRODUCT_ID } }],
+          [{ supportedMethods: PLAY_BILLING_METHOD, data: { sku: PREMIUM_PRODUCT_ID } }],
           { total: { label: 'Premium', amount: { currency: 'BRL', value: '4.90' } } }
         );
         paymentResponse = await request.show();
-        diag.push('show=OK');
         // Na Digital Goods API v2.1 (Chrome 96+) o próprio complete('success')
         // reconhece a compra, e acknowledge() deixou de existir. Produto não-consumível:
         // nunca chamar consume(), senão o usuário perderia o acesso já pago.
@@ -741,11 +717,9 @@ async function purchasePremium(){
           await service.acknowledge(paymentResponse.details.purchaseToken, 'onetime');
         }
       }catch(err){
-        // DIAGNÓSTICO TEMPORÁRIO: mostra até o AbortError (cancelamento), que
-        // normalmente é silencioso — uma interrupção do sistema é indistinguível
-        // de um cancelamento do usuário, e precisamos ver os dois.
-        console.error('Erro na compra', err, diag);
-        showAlert(`DIAG — ${err.name}: ${err.message} || ${diag.join(' ; ')} || Chrome ${(navigator.userAgent.match(/Chrome\/[\d.]+/) || ['?'])[0]}`);
+        if(err.name === 'AbortError') return; // usuário cancelou o pagamento
+        console.error('Erro na compra', err);
+        showAlert(`Não foi possível concluir a compra agora (${err.name}: ${err.message}). Tente novamente.`);
         return;
       }
 
